@@ -1,0 +1,11 @@
+{
+  "users": [
+    {
+      "id": "mock-q16r1s035",
+      "createdAt": "2026-06-05T03:30:02.426Z",
+      "auth_id": "mock-user-oet3c9g7s",
+      "email": "john@doe.com",
+      "name": "John Doe"
+    }
+  ]
+}
