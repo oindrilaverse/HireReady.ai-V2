@@ -11,8 +11,6 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
     "@clerk/nextjs": "^7.2.9",
-    "@supabase/auth-helpers-nextjs": "^0.15.0",
-    "@supabase/auth-helpers-react": "^0.15.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.1",
     "clsx": "^2.1.1",
