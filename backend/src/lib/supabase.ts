@@ -11,8 +11,8 @@ const __dirname = path.dirname(__filename);
 // Load environment variables immediately during ES module import initialization
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.SUPABASE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 
 const originalSupabase = createClient(supabaseUrl, supabaseAnonKey);
 
