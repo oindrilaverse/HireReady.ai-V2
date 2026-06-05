@@ -171,7 +171,15 @@ export default function AnalyzerPage() {
       sessionStorage.setItem(fileKey, JSON.stringify(analysisResult));
       setResult(analysisResult);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "An error occurred during analysis.";
+      let errorMessage = "An error occurred during analysis.";
+      if (err instanceof Error) {
+        const msg = err.message;
+        if (msg.includes("Unexpected token") || msg.includes("is not valid JSON") || msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+          errorMessage = "Connecting to analysis server, please try again in a moment...";
+        } else {
+          errorMessage = msg;
+        }
+      }
       setError(errorMessage);
       setFile(null);
     } finally {
