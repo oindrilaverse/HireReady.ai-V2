@@ -18,6 +18,7 @@ interface AnalysisResult {
 }
 
 import { useAuthSync } from "@/hooks/useAuthSync";
+import { API_URL } from "@/lib/utils";
 
 export default function AnalyzerPage() {
   const { user } = useAuthSync();
@@ -104,7 +105,7 @@ export default function AnalyzerPage() {
       if (name) formData.append('userName', name);
 
       // Step 1: Upload and Extract Text
-      const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/analyze/upload`, {
+      const uploadResponse = await fetch(`${API_URL}/analyze/upload`, {
         method: "POST",
         body: formData,
       });
@@ -127,7 +128,7 @@ export default function AnalyzerPage() {
         reportData = uploadData.report;
       } else {
         // Step 2: Run AI Analysis Asynchronously
-        const processResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/analyze/process`, {
+        const processResponse = await fetch(`${API_URL}/analyze/process`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ resumeId: uploadData.resumeId })

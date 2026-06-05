@@ -5,6 +5,8 @@ import { useCareerStore } from "@/store/careerStore";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 
+import { API_URL } from "@/lib/utils";
+
 export function useAuthSync() {
   const { isSynced, setSynced, setDashboardData } = useCareerStore();
   const [user, setUser] = useState<any>(null);
@@ -27,11 +29,7 @@ export function useAuthSync() {
         if (!isSynced && !syncInProgress.current) {
           syncInProgress.current = true;
           try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-            if (!apiUrl) {
-              console.warn("NEXT_PUBLIC_API_URL is not defined");
-              return;
-            }
+            const apiUrl = API_URL;
             
             // Sync user with backend
             const syncRes = await fetch(`${apiUrl}/users/sync`, {

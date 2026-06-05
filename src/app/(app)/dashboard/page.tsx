@@ -7,6 +7,8 @@ import { useCareerStore } from "@/store/careerStore";
 import { useAuthSync } from "@/hooks/useAuthSync";
 import { motion } from "framer-motion";
 
+import { API_URL } from "@/lib/utils";
+
 export default function DashboardPage() {
   const { user } = useAuthSync();
   const { dashboardData, setDashboardData } = useCareerStore();
@@ -20,7 +22,7 @@ export default function DashboardPage() {
       }
       
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${user.id}/dashboard`);
+        const res = await fetch(`${API_URL}/users/${user.id}/dashboard`);
         if (res.ok) {
           const envelope = await res.json();
           if (envelope.success && envelope.data) {

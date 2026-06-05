@@ -7,6 +7,7 @@ import { Target, Search, CheckCircle2, XCircle, ChevronRight, Activity, Zap } fr
 
 import { useAuthSync } from "@/hooks/useAuthSync";
 import { useCareerStore } from "@/store/careerStore";
+import { API_URL } from "@/lib/utils";
 
 export default function JobMatchPage() {
   const { user } = useAuthSync();
@@ -28,7 +29,7 @@ export default function JobMatchPage() {
       fetchedForResumeId.current = latestResume.id;
       setSuggestedLoading(true);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/suggested/${latestResume.id}`);
+        const res = await fetch(`${API_URL}/jobs/suggested/${latestResume.id}`);
         if (res.ok) {
           const envelope = await res.json();
           if (envelope.success && envelope.data) {
@@ -69,7 +70,7 @@ export default function JobMatchPage() {
         throw new Error("No resume found. Please upload and analyze a resume first.");
       }
 
-      const matchRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/match`, {
+      const matchRes = await fetch(`${API_URL}/jobs/match`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

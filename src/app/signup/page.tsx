@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 
+import { API_URL } from '@/lib/utils';
+
 export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,7 +39,7 @@ export default function SignupPage() {
 
       if (data.user) {
         // Sync with our backend
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        const apiUrl = API_URL;
         await fetch(`${apiUrl}/users/sync`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
