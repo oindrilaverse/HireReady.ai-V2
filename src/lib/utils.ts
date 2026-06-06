@@ -9,6 +9,11 @@ export function getApiUrl(endpoint: string): string {
   const defaultBase = "https://hireready-ai-v2.onrender.com/api";
   let base = process.env.NEXT_PUBLIC_API_URL || defaultBase;
   
+  // Ignore Vercel preview/production frontend URLs if they are mistakenly set as NEXT_PUBLIC_API_URL
+  if (base.includes('vercel.app')) {
+    base = defaultBase;
+  }
+  
   // Normalize base: remove trailing slash
   base = base.replace(/\/+$/, '');
   
