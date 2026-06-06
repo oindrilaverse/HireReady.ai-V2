@@ -78,7 +78,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Quick Actions */}
-        <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col items-start hover:border-blue-500/50 transition-colors group relative overflow-hidden">
+        <div className="glass card-hover p-6 rounded-2xl flex flex-col items-start group relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
           <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4 text-blue-400 relative z-10">
             <FileText className="w-6 h-6" />
@@ -90,7 +90,7 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col items-start hover:border-indigo-500/50 transition-colors group relative overflow-hidden">
+        <div className="glass card-hover p-6 rounded-2xl flex flex-col items-start group relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all"></div>
           <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center mb-4 text-indigo-400 relative z-10">
             <Target className="w-6 h-6" />
@@ -103,7 +103,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Card */}
-        <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col items-start relative overflow-hidden">
+        <div className="glass card-hover p-6 rounded-2xl flex flex-col items-start relative overflow-hidden">
           <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4 text-purple-400">
             <BarChart2 className="w-6 h-6" />
           </div>
@@ -124,20 +124,20 @@ export default function DashboardPage() {
       <div className="mt-12">
         <h2 className="text-xl font-bold text-white mb-6">Recent History</h2>
         {resumes.length === 0 ? (
-          <div className="text-center py-12 bg-slate-900 border border-slate-800 rounded-2xl">
+          <div className="text-center py-12 glass rounded-2xl">
             <p className="text-slate-400">No resumes analyzed yet. Start your first analysis!</p>
-            <Link href="/analyzer" className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500">
+            <Link href="/analyzer" className="mt-4 inline-block px-6 py-2 btn-premium rounded-xl">
               Analyze Resume
             </Link>
           </div>
         ) : (
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
-            <div className="divide-y divide-slate-800">
+          <div className="glass rounded-2xl overflow-hidden">
+            <div className="divide-y divide-white/5">
               {resumes.map((resume: any) => {
                 const report = resume.analyses?.[0];
                 return (
-                  <div key={resume.id} className="p-4 flex items-center gap-4 hover:bg-slate-800/50 transition-colors">
-                    <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400">
+                  <div key={resume.id} className="p-4 flex items-center gap-4 hover:bg-white/[0.02] transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-slate-400">
                       <Clock className="w-5 h-5" />
                     </div>
                     <div className="flex-1">

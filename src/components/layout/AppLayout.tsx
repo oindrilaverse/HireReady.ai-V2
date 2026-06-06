@@ -13,9 +13,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-50 overflow-hidden font-sans">
+    <div className="flex h-screen bg-transparent text-slate-50 overflow-hidden font-sans relative">
       <Sidebar />
-      <div className="flex-1 flex flex-col md:ml-64 relative min-w-0">
+      <div className="flex-1 flex flex-col md:ml-64 relative min-w-0 z-10">
         <TopNavbar />
         <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 custom-scrollbar">
           <div className="max-w-6xl mx-auto w-full">

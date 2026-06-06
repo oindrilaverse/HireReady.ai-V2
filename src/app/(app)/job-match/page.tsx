@@ -179,7 +179,7 @@ export default function JobMatchPage() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden"
+          className="glass rounded-3xl p-8 relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-3xl rounded-full pointer-events-none" />
           
@@ -191,7 +191,7 @@ export default function JobMatchPage() {
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
             placeholder="Paste the full job description here (responsibilities, requirements, qualifications)..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-6 text-slate-300 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none transition-all"
+            className="w-full bg-black/30 border border-white/5 rounded-2xl p-6 text-slate-300 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none transition-all"
           />
           
           {error && <p className="text-red-400 text-sm mt-4 font-medium">{error}</p>}
@@ -199,7 +199,7 @@ export default function JobMatchPage() {
           <div className="mt-8 flex justify-end">
             <button 
               onClick={handleMatch}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.4)] flex items-center gap-2 hover:scale-105"
+              className="btn-premium font-semibold py-3 px-8 rounded-xl flex items-center gap-2"
             >
               Analyze Match <Zap className="w-5 h-5" />
             </button>
@@ -209,7 +209,13 @@ export default function JobMatchPage() {
 
       {loading && (
         <div className="flex flex-col items-center justify-center py-24">
-          <Activity className="w-12 h-12 text-indigo-500 animate-spin mb-6" />
+          <div className="relative w-24 h-24 mb-8">
+            <div className="absolute inset-0 rounded-full border-t-2 border-indigo-500 border-opacity-50 animate-spin" style={{ animationDuration: '2.5s' }} />
+            <div className="absolute inset-2 rounded-full border-r-2 border-primary border-opacity-60 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+            <div className="absolute inset-6 rounded-full bg-indigo-500/20 flex items-center justify-center animate-pulse">
+              <Activity className="w-6 h-6 text-indigo-400" />
+            </div>
+          </div>
           <h3 className="text-xl font-bold text-white mb-2">Analyzing Compatibility...</h3>
           <p className="text-slate-400">Comparing your skills with role requirements.</p>
         </div>
@@ -224,7 +230,7 @@ export default function JobMatchPage() {
           <div className="flex justify-between items-center mb-4">
              <button 
                 onClick={() => { setResult(null); setJobDescription(""); }}
-                className="text-sm font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-2 bg-slate-900 px-4 py-2 rounded-lg border border-slate-800 hover:bg-slate-800"
+                className="text-sm font-medium text-slate-400 hover:text-white transition-all flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10 hover:bg-white/10"
               >
                 New Match <ChevronRight className="w-4 h-4" />
               </button>
@@ -232,7 +238,7 @@ export default function JobMatchPage() {
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* Score Card */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
+            <div className="glass rounded-3xl p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/10 to-transparent" />
               <h3 className="text-slate-400 font-semibold mb-6 uppercase tracking-wider text-sm relative z-10">Match Score</h3>
               <div className={`text-7xl font-extrabold tracking-tighter mb-4 ${getScoreColor(result.score)} relative z-10`}>
@@ -243,7 +249,7 @@ export default function JobMatchPage() {
 
             {/* Matching & Missing Skills */}
             <div className="md:col-span-2 space-y-6">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+              <div className="glass rounded-3xl p-6">
                 <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-green-400" /> Matching Skills
                 </h3>
@@ -256,7 +262,7 @@ export default function JobMatchPage() {
                 </div>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+              <div className="glass rounded-3xl p-6">
                 <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                   <XCircle className="w-5 h-5 text-red-400" /> Missing Skills (Gap)
                 </h3>
@@ -271,13 +277,13 @@ export default function JobMatchPage() {
             </div>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8">
+          <div className="glass rounded-3xl p-8">
             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <Zap className="w-6 h-6 text-indigo-400" /> Improvement Suggestions
             </h3>
             <ul className="space-y-4">
               {result.feedback.improvementSuggestions.map((suggestion: string, i: number) => (
-                <li key={i} className="flex items-start gap-4 text-slate-300 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                <li key={i} className="flex items-start gap-4 text-slate-300 bg-white/5 p-4 rounded-xl border border-white/5">
                   <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 font-bold text-xs shrink-0 mt-0.5">
                     {i + 1}
                   </span>
