@@ -45,7 +45,6 @@ export function useAuthSync() {
                 const data = await res.json();
                 setDashboardData(data);
                 setSynced(true);
-                console.log("Auth & Data synced successfully");
               }
             }
           } catch (err) {
@@ -63,7 +62,6 @@ export function useAuthSync() {
     checkUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
-      console.log(`Auth event: ${event}`);
       if (session?.user) {
         setUser(session.user);
       } else {

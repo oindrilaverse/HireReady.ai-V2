@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #08080a;
-  --foreground: #ffffff;
+  --background: #09090b;
+  --foreground: #f4f4f5;
   
-  /* Option 1 Premium Colors (Netflix Black & Apple Glass & Electric Neon) */
+  /* Space/Neon Corporate Theme Colors */
   --color-primary: #007bff; /* Electric Blue */
-  --color-secondary: #8b5cf6; /* Violet Neon */
+  --color-secondary: #8b5cf6; /* Purple glow */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-critical: #ef4444;
-  --color-card-bg: rgba(10, 10, 12, 0.45);
+  --color-card-bg: rgba(15, 15, 20, 0.45);
   --color-card-border: rgba(255, 255, 255, 0.08);
 }
 
@@ -34,54 +34,41 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   min-height: 100vh;
-  position: relative;
   overflow-x: hidden;
 }
 
-/* Premium Glassmorphism utility with high backing blur */
+/* Premium Apple-style Glassmorphism utility */
 @utility glass {
-  background: rgba(10, 10, 12, 0.45);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(15, 15, 20, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: border 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Apple-style premium button micro-interactions */
-@utility btn-premium {
-  position: relative;
-  background: linear-gradient(135deg, var(--color-primary), #1d4ed8);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 14px 0 rgba(0, 123, 255, 0.3);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+@utility glass-hover {
+  &:hover {
+    background: rgba(20, 20, 30, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 40px 0 rgba(0, 123, 255, 0.08);
+  }
 }
 
-.btn-premium:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px 0 rgba(0, 123, 255, 0.45), 0 0 12px 0 rgba(139, 92, 246, 0.3);
-  background: linear-gradient(135deg, #0b84ff, #2563eb);
-}
-
-.btn-premium:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 10px 0 rgba(0, 123, 255, 0.3);
-}
-
-/* Glass card hover zoom & border-glow */
-@utility card-hover {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.card-hover:hover {
-  transform: translateY(-4px);
-  border-color: rgba(0, 123, 255, 0.25);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6), 0 0 20px 0 rgba(0, 123, 255, 0.15);
+/* Micro-interaction hovers for buttons */
+@utility btn-hover {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  &:hover {
+    transform: translateY(-1.5px);
+    box-shadow: 0 0 20px rgba(0, 123, 255, 0.45);
+  }
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
@@ -91,37 +78,34 @@ body {
   border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 123, 255, 0.4);
+  background: rgba(0, 123, 255, 0.45);
 }
 
 @layer utilities {
   .animate-glow {
     animation: glow 3s ease-in-out infinite alternate;
   }
-  .animate-pulse-slow {
-    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
 }
 
 @keyframes glow {
   0% {
-    box-shadow: 0 0 10px rgba(0, 123, 255, 0.2), 0 0 20px rgba(139, 92, 246, 0.1);
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.15), 0 0 20px rgba(139, 92, 246, 0.15);
   }
   100% {
-    box-shadow: 0 0 25px rgba(0, 123, 255, 0.45), 0 0 40px rgba(139, 92, 246, 0.35);
+    box-shadow: 0 0 22px rgba(0, 123, 255, 0.4), 0 0 35px rgba(139, 92, 246, 0.3);
   }
 }
 
-/* Premium Shimmer Skeleton utility with bright metallic tone */
+/* Premium Shimmer Skeleton utility */
 @utility skeleton {
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0.02) 25%,
-    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.07) 50%,
     rgba(255, 255, 255, 0.02) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
+  animation: shimmer 1.6s infinite linear;
 }
 
 @keyframes shimmer {
@@ -132,3 +116,4 @@ body {
     background-position: -200% 0;
   }
 }
+

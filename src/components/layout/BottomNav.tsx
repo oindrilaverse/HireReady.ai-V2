@@ -22,7 +22,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 glass border-t border-[#1e1e30] z-40 flex items-center justify-around px-2 pb-safe">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 glass border-t border-white/5 z-40 flex items-center justify-around px-2 pb-safe">
       {mobileItems.map((item) => {
         const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
         return (

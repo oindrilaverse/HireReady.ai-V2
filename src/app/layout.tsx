@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { InteractiveBackground } from "@/components/layout/InteractiveBackground";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,10 +27,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-transparent text-slate-50 relative">
-        <InteractiveBackground />
-        {children}
-      </body>
+      <body className="min-h-full flex flex-col bg-[#09090b] text-[#f4f4f5]">{children}</body>
     </html>
   );
 }

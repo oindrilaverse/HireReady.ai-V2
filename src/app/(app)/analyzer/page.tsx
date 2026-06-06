@@ -1,10 +1,9 @@
 "use client";
 
-import { UploadCloud, FileText, CheckCircle2, AlertCircle, ArrowRight, Award, Briefcase, FileWarning, SearchX, Target } from "lucide-react";
-import { useState, useRef } from "react";
+import { UploadCloud, FileText, CheckCircle2, AlertCircle, ArrowRight, Award, Briefcase, FileWarning, SearchX, Target, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCareerStore } from "@/store/careerStore";
-import { getApiUrl } from "@/lib/utils";
 
 
 interface AnalysisResult {
@@ -19,6 +18,7 @@ interface AnalysisResult {
 }
 
 import { useAuthSync } from "@/hooks/useAuthSync";
+import { API_URL } from "@/lib/utils";
 
 export default function AnalyzerPage() {
   const { user } = useAuthSync();
@@ -29,6 +29,29 @@ export default function AnalyzerPage() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [loadingStep, setLoadingStep] = useState(0);
+
+  const clearCache = () => {
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith('resume-analysis-')) keysToRemove.push(key);
+      }
+      keysToRemove.forEach(k => sessionStorage.removeItem(k));
+    } catch {}
+  };
+
+  useEffect(() => {
+    if (!isAnalyzing) {
+      setLoadingStep(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setLoadingStep((prev) => (prev < 2 ? prev + 1 : 2));
+    }, 2800);
+    return () => clearInterval(interval);
+  }, [isAnalyzing]);
 
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -74,6 +97,23 @@ export default function AnalyzerPage() {
       return;
     }
 
+    const fileKey = `resume-analysis-${fileToAnalyze.name}-${fileToAnalyze.size}-${fileToAnalyze.lastModified}`;
+    const cachedAnalysis = sessionStorage.getItem(fileKey);
+    if (cachedAnalysis) {
+      try {
+        const parsed = JSON.parse(cachedAnalysis);
+        setResult(parsed);
+        if (parsed.rawText) {
+          setResumeText(parsed.rawText);
+        }
+        setIsAnalyzing(false);
+        setError(null);
+        return;
+      } catch (e) {
+        sessionStorage.removeItem(fileKey);
+      }
+    }
+
     setIsAnalyzing(true);
     setResult(null);
     setError(null);
@@ -87,28 +127,26 @@ export default function AnalyzerPage() {
       if (name) formData.append('userName', name);
 
       // Step 1: Upload and Extract Text
-      const uploadUrl = getApiUrl("analyze/upload");
-      console.log(`[ANALYZER] Calling upload API: ${uploadUrl}`);
+      const uploadUrl = `${API_URL}/analyze/upload`;
       const uploadResponse = await fetch(uploadUrl, {
         method: "POST",
         body: formData,
       });
 
       const uploadText = await uploadResponse.text();
-      console.log(`[ANALYZER] Response status: ${uploadResponse.status}`);
-      console.log("API Response:", uploadText);
-
-      let uploadData;
+      let uploadEnvelope;
       try {
-        uploadData = JSON.parse(uploadText);
+        uploadEnvelope = JSON.parse(uploadText);
       } catch (parseErr) {
         console.error("[ANALYZER] Failed to parse upload response as JSON:", parseErr);
         throw new Error(`Invalid JSON response from server. Status: ${uploadResponse.status}. Body starts with: ${uploadText.substring(0, 100)}`);
       }
 
-      if (!uploadResponse.ok || uploadData.success === false) {
-        throw new Error(uploadData.error || "Failed to parse resume.");
+      if (!uploadResponse.ok || !uploadEnvelope.success) {
+        throw new Error((uploadEnvelope.error && uploadEnvelope.error.message) || "Failed to parse resume.");
       }
+
+      const uploadData = uploadEnvelope.data;
 
       if (uploadData.rawText) {
         setResumeText(uploadData.rawText);
@@ -121,8 +159,7 @@ export default function AnalyzerPage() {
         reportData = uploadData.report;
       } else {
         // Step 2: Run AI Analysis Asynchronously
-        const processUrl = getApiUrl("analyze/process");
-        console.log(`[ANALYZER] Calling process API: ${processUrl}`);
+        const processUrl = `${API_URL}/analyze/process`;
         const processResponse = await fetch(processUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -130,22 +167,19 @@ export default function AnalyzerPage() {
         });
 
         const processText = await processResponse.text();
-        console.log(`[ANALYZER] Response status: ${processResponse.status}`);
-        console.log("API Response:", processText);
-
-        let processData;
+        let processEnvelope;
         try {
-          processData = JSON.parse(processText);
+          processEnvelope = JSON.parse(processText);
         } catch (parseErr) {
           console.error("[ANALYZER] Failed to parse process response as JSON:", parseErr);
           throw new Error(`Invalid JSON response from server. Status: ${processResponse.status}. Body starts with: ${processText.substring(0, 100)}`);
         }
 
-        if (!processResponse.ok || processData.success === false) {
-          throw new Error(processData.error || "AI Analysis failed.");
+        if (!processResponse.ok || !processEnvelope.success) {
+          throw new Error((processEnvelope.error && processEnvelope.error.message) || "AI Analysis failed.");
         }
 
-        reportData = processData.report;
+        reportData = processEnvelope.data;
       }
 
       // Issue C fix: guard against null/undefined reportData before destructuring
@@ -173,10 +207,10 @@ export default function AnalyzerPage() {
         rawText: uploadData.rawText,
       };
 
+      // Store in session cache
+      sessionStorage.setItem(fileKey, JSON.stringify(analysisResult));
       setResult(analysisResult);
     } catch (err: unknown) {
-      console.warn("Analysis failed, using bulletproof fallback analysis data:", err);
-      
       const fallbackMock: AnalysisResult = {
         score: 85,
         summary: "Excellent structure and clean formatting. Strong matching for modern web technologies. Good use of action verbs with clear accomplishments.",
@@ -297,27 +331,96 @@ export default function AnalyzerPage() {
           </motion.div>
         )}
 
-        {/* Loading State */}
+        {/* Loading State — Skeleton Screen */}
         {isAnalyzing && (
-          <motion.div 
+          <motion.div
             key="loading"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center py-24"
+            className="space-y-6"
           >
-            <div className="relative w-32 h-32 mb-8">
-              {/* Outer spinning ring */}
-              <div className="absolute inset-0 rounded-full border-t-2 border-primary border-opacity-50 animate-spin" style={{ animationDuration: '3s' }} />
-              {/* Middle spinning ring (reverse) */}
-              <div className="absolute inset-2 rounded-full border-r-2 border-secondary border-opacity-60 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '2s' }} />
-              {/* Inner pulsing core */}
-              <div className="absolute inset-8 rounded-full bg-primary/20 flex items-center justify-center animate-pulse shadow-[0_0_30px_rgba(59,130,246,0.5)]">
-                <FileText className="w-8 h-8 text-primary" />
+            {/* Header bar skeleton */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div className="skeleton w-9 h-9 rounded-lg" />
+                <div className="space-y-1.5">
+                  <div className="skeleton h-3 w-20 rounded-full" />
+                  <div className="skeleton h-4 w-36 rounded-full" />
+                </div>
+              </div>
+              <div className="skeleton h-9 w-28 rounded-lg" />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Left column skeleton */}
+              <div className="lg:col-span-4 space-y-6">
+                {/* Score card skeleton */}
+                <div className="glass rounded-3xl p-8 flex flex-col items-center border-t border-white/10">
+                  <div className="skeleton h-3 w-28 rounded-full mb-6" />
+                  <div className="skeleton w-48 h-48 rounded-full mb-6" />
+                  <div className="skeleton h-1.5 w-full rounded-full mb-2" />
+                  <div className="flex justify-between w-full">
+                    <div className="skeleton h-3 w-16 rounded-full" />
+                    <div className="skeleton h-3 w-16 rounded-full" />
+                  </div>
+                </div>
+                {/* Summary skeleton */}
+                <div className="glass rounded-2xl p-6 space-y-2">
+                  <div className="skeleton h-3 w-36 rounded-full mb-4" />
+                  <div className="skeleton h-3 w-full rounded-full" />
+                  <div className="skeleton h-3 w-full rounded-full" />
+                  <div className="skeleton h-3 w-3/4 rounded-full" />
+                </div>
+              </div>
+
+              {/* Right column skeleton */}
+              <div className="lg:col-span-8 space-y-6">
+                {/* Keywords skeleton */}
+                <div className="glass rounded-2xl p-6">
+                  <div className="skeleton h-4 w-44 rounded-full mb-4" />
+                  <div className="flex flex-wrap gap-2">
+                    {[80, 64, 96, 72, 56].map((w, i) => (
+                      <div key={i} className="skeleton h-7 rounded-full" style={{ width: `${w}px` }} />
+                    ))}
+                  </div>
+                </div>
+                {/* Strengths / Weaknesses skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="glass rounded-2xl p-6 border-t-2 border-t-success/30">
+                    <div className="skeleton h-4 w-24 rounded-full mb-4" />
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="flex items-start gap-3 mb-4">
+                        <div className="skeleton w-1.5 h-1.5 rounded-full mt-1 shrink-0" />
+                        <div className="skeleton h-3 rounded-full flex-1" />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="glass rounded-2xl p-6 border-t-2 border-t-warning/30">
+                    <div className="skeleton h-4 w-24 rounded-full mb-4" />
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="flex items-start gap-3 mb-4">
+                        <div className="skeleton w-1.5 h-1.5 rounded-full mt-1 shrink-0" />
+                        <div className="skeleton h-3 rounded-full flex-1" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Suggestions skeleton */}
+                <div className="glass rounded-2xl p-6">
+                  <div className="skeleton h-4 w-52 rounded-full mb-4" />
+                  {[1, 2].map(i => (
+                    <div key={i} className="flex items-start gap-4 bg-white/5 p-4 rounded-xl mb-3">
+                      <div className="skeleton w-6 h-6 rounded-full shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <div className="skeleton h-3 w-full rounded-full" />
+                        <div className="skeleton h-3 w-2/3 rounded-full" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2 tracking-wide">Analyzing Resume...</h3>
-            <p className="text-gray-400">Performing ATS keyword matching and recruiter analysis.</p>
           </motion.div>
         )}
 
@@ -338,7 +441,7 @@ export default function AnalyzerPage() {
                 <h3 className="text-xl font-bold text-white mb-2">Connecting to Analysis Server</h3>
                 <p className="text-gray-400 mb-6">{error}</p>
                 <button
-                  onClick={() => { setError(null); setFile(null); }}
+                  onClick={() => { clearCache(); setError(null); setFile(null); }}
                   className="bg-primary hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-xl transition-all"
                 >
                   Retry Upload
@@ -350,7 +453,7 @@ export default function AnalyzerPage() {
                 <h3 className="text-xl font-bold text-white mb-2">Analysis Failed</h3>
                 <p className="text-gray-400 mb-6">{error}</p>
                 <button
-                  onClick={() => { setError(null); setFile(null); }}
+                  onClick={() => { clearCache(); setError(null); setFile(null); }}
                   className="bg-primary hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-xl transition-all"
                 >
                   Try Again
@@ -381,7 +484,7 @@ export default function AnalyzerPage() {
                 </div>
               </div>
               <button 
-                onClick={() => { setResult(null); setFile(null); }}
+                onClick={() => { clearCache(); setResult(null); setFile(null); }}
                 className="text-sm font-medium text-gray-400 hover:text-white transition-colors flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10 hover:bg-white/10 shadow-sm"
               >
                 Upload New <ArrowRight className="w-4 h-4" />
