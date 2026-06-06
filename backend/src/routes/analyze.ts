@@ -31,6 +31,13 @@ if (typeof pdfParseModule === 'function') {
     const result = await parser.getText();
     return result.text || '';
   };
+} else if (pdfParseModule && pdfParseModule.PDFParse) {
+  // Add a fallback for the case where PDFParse is an object
+  pdfParserFn = async (buffer: Buffer) => {
+    const parser = new pdfParseModule.PDFParse({ data: new Uint8Array(buffer) });
+    const result = await parser.getText();
+    return result.text || '';
+  };
 } else {
   pdfParserFn = async () => {
     throw new Error('No valid PDF parser found in pdf-parse module');
@@ -298,6 +305,9 @@ router.post('/process', async (req, res): Promise<any> => {
 
     const prompt = `Act as a senior recruiter and ATS system for top tech companies.
 Analyze the resume and return the analysis in the JSON structure specified below.
+
+Resume Content:
+${resume.text}
 
 Requirements:
 1. ATS Score (0-100) based on Keyword match (30%), Skills relevance (25%), Experience quality (20%), Formatting & readability (15%), Action verbs & impact (10%).
