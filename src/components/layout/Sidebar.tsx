@@ -8,21 +8,30 @@ import {
   Target, 
   Briefcase, 
   PenTool, 
-  MessageSquare
+  MessageSquare,
+  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Resume Analyzer", href: "/analyzer", icon: FileText },
-  { name: "Resume Builder", href: "/builder", icon: PenTool },
-  { name: "Job Matcher", href: "/matcher", icon: Target },
-  { name: "Cover Letter", href: "/cover-letter", icon: Briefcase },
-  { name: "Interview Prep", href: "/interview", icon: MessageSquare },
+  { name: "Job Matcher", href: "/job-match", icon: Target },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    // Do NOT call router.refresh() here — it triggers middleware which redirects
+    // to /login at the same time as router.push('/login'), causing a loop.
+    router.push("/login");
+  };
 
   return (
     <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 border-r border-[#1e1e30] glass z-40">
@@ -59,7 +68,15 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="p-4 mt-auto">
+      <div className="p-4 mt-auto space-y-4">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-400/5 transition-all duration-200 group"
+        >
+          <LogOut className="w-5 h-5 text-gray-500 group-hover:text-red-400" />
+          Logout
+        </button>
+
         <div className="glass rounded-xl p-4 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent relative overflow-hidden">
           <div className="absolute top-0 right-0 w-16 h-16 bg-primary/20 blur-xl rounded-full translate-x-1/2 -translate-y-1/2" />
           <h4 className="font-semibold text-white text-sm mb-1">Pro Features</h4>

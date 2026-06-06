@@ -13,9 +13,10 @@ import { cn } from "@/lib/utils";
 const mobileItems = [
   { name: "Home", href: "/dashboard", icon: LayoutDashboard },
   { name: "Analyze", href: "/analyzer", icon: FileText },
-  { name: "Jobs", href: "/matcher", icon: Target },
+  { name: "Jobs", href: "/job-match", icon: Target },
   { name: "Cover", href: "/cover-letter", icon: Briefcase },
 ];
+
 
 export function BottomNav() {
   const pathname = usePathname();

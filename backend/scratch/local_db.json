@@ -1,0 +1,73 @@
+{
+  "users": [
+    {
+      "id": "bde52bb3-d1c8-47f0-9254-08908f2f4255",
+      "createdAt": "2026-06-05T19:22:30.702Z",
+      "auth_id": "8d3068f0-4561-42f8-91e4-a4a25a9f5515",
+      "email": "testuser_stabilize@example.com",
+      "name": "Test User"
+    }
+  ],
+  "resumes": [
+    {
+      "id": "a8aac6de-c74f-4c50-8e25-1dedb9c4117c",
+      "createdAt": "2026-06-05T19:30:36.173Z",
+      "userId": "bde52bb3-d1c8-47f0-9254-08908f2f4255",
+      "text": "John Doe\njohn.doe@example.com | (123) 456-7890 | Seattle, WA | github.com/johndoe | linkedin.com/in/johndoe\n\nPROFESSIONAL SUMMARY\nExperienced Full Stack Software Engineer with 5+ years of experience designing, building, and deploying scalable web applications. Proficient in TypeScript, React, Next.js, Node.js, and PostgreSQL. Proven track record of improving application performance by 40% and leading cross-functional teams.\n\nSKILLS\n- Languages: TypeScript, JavaScript, Python, Go, SQL, HTML, CSS\n- Frameworks & Libraries: React, Next.js, Node.js, Express, TailwindCSS, Jest\n- Tools & Databases: PostgreSQL, MongoDB, Redis, Docker, AWS (S3, EC2, ECS), Git, CI/CD\n\nEXPERIENCE\nLead Software Engineer | TechCorp, Seattle, WA | 2023 - Present\n- Architected and built a microservices-based web application using Next.js and Node.js, serving over 500,000 monthly active users.\n- Improved page load speed and core web vitals by 45% through optimized server-side rendering, code splitting, and caching strategies.\n- Mentored 4 junior developers and established code review guidelines to improve team velocity and code quality.\n\nSoftware Engineer | AppStart, San Francisco, CA | 2021 - 2023\n- Developed new features for a customer-facing dashboard using React, Redux, and TailwindCSS.\n- Integrated third-party APIs (Stripe, SendGrid) and reduced database query response times by 30% by writing optimized SQL indexes and query refactoring.\n- Maintained 90%+ test coverage using Jest and React Testing Library.\n\nEDUCATION\nBachelor of Science in Computer Science | University of Washington | 2017 - 2021\n",
+      "textHash": "c49699fea910e791cfc191ad85b38d2fd4011c5deb410752e9fb47a58a821e0b",
+      "originalName": "test-resume.txt"
+    },
+    {
+      "id": "14aeba7f-bb43-4580-9f16-cf4dfb41a27b",
+      "createdAt": "2026-06-05T19:31:33.261Z",
+      "userId": "bde52bb3-d1c8-47f0-9254-08908f2f4255",
+      "text": "John Doe\njohn.doe@example.com | (123) 456-7890 | Seattle, WA | github.com/johndoe | linkedin.com/in/johndoe\n\nPROFESSIONAL SUMMARY\nExperienced Full Stack Software Engineer with 5+ years of experience designing, building, and deploying scalable web applications. Proficient in TypeScript, React, Next.js, Node.js, and PostgreSQL. Proven track record of improving application performance by 40% and leading cross-functional teams.\n\nSKILLS\n- Languages: TypeScript, JavaScript, Python, Go, SQL, HTML, CSS\n- Frameworks & Libraries: React, Next.js, Node.js, Express, TailwindCSS, Jest\n- Tools & Databases: PostgreSQL, MongoDB, Redis, Docker, AWS (S3, EC2, ECS), Git, CI/CD\n\nEXPERIENCE\nLead Software Engineer | TechCorp, Seattle, WA | 2023 - Present\n- Architected and built a microservices-based web application using Next.js and Node.js, serving over 500,000 monthly active users.\n- Improved page load speed and core web vitals by 45% through optimized server-side rendering, code splitting, and caching strategies.\n- Mentored 4 junior developers and established code review guidelines to improve team velocity and code quality.\n\nSoftware Engineer | AppStart, San Francisco, CA | 2021 - 2023\n- Developed new features for a customer-facing dashboard using React, Redux, and TailwindCSS.\n- Integrated third-party APIs (Stripe, SendGrid) and reduced database query response times by 30% by writing optimized SQL indexes and query refactoring.\n- Maintained 90%+ test coverage using Jest and React Testing Library.\n\nEDUCATION\nBachelor of Science in Computer Science | University of Washington | 2017 - 2021\n",
+      "textHash": "c49699fea910e791cfc191ad85b38d2fd4011c5deb410752e9fb47a58a821e0b",
+      "originalName": "test-resume.txt"
+    },
+    {
+      "id": "165bb13c-a6a8-43b7-8d94-3d5841834182",
+      "createdAt": "2026-06-05T19:32:33.180Z",
+      "userId": "bde52bb3-d1c8-47f0-9254-08908f2f4255",
+      "text": "John Doe\njohn.doe@example.com | (123) 456-7890 | Seattle, WA | github.com/johndoe | linkedin.com/in/johndoe\n\nPROFESSIONAL SUMMARY\nExperienced Full Stack Software Engineer with 5+ years of experience designing, building, and deploying scalable web applications. Proficient in TypeScript, React, Next.js, Node.js, and PostgreSQL. Proven track record of improving application performance by 40% and leading cross-functional teams.\n\nSKILLS\n- Languages: TypeScript, JavaScript, Python, Go, SQL, HTML, CSS\n- Frameworks & Libraries: React, Next.js, Node.js, Express, TailwindCSS, Jest\n- Tools & Databases: PostgreSQL, MongoDB, Redis, Docker, AWS (S3, EC2, ECS), Git, CI/CD\n\nEXPERIENCE\nLead Software Engineer | TechCorp, Seattle, WA | 2023 - Present\n- Architected and built a microservices-based web application using Next.js and Node.js, serving over 500,000 monthly active users.\n- Improved page load speed and core web vitals by 45% through optimized server-side rendering, code splitting, and caching strategies.\n- Mentored 4 junior developers and established code review guidelines to improve team velocity and code quality.\n\nSoftware Engineer | AppStart, San Francisco, CA | 2021 - 2023\n- Developed new features for a customer-facing dashboard using React, Redux, and TailwindCSS.\n- Integrated third-party APIs (Stripe, SendGrid) and reduced database query response times by 30% by writing optimized SQL indexes and query refactoring.\n- Maintained 90%+ test coverage using Jest and React Testing Library.\n\nEDUCATION\nBachelor of Science in Computer Science | University of Washington | 2017 - 2021\n",
+      "textHash": "c49699fea910e791cfc191ad85b38d2fd4011c5deb410752e9fb47a58a821e0b",
+      "originalName": "test-resume.txt"
+    },
+    {
+      "id": "a00b8d15-8446-445e-bdb9-f2f4df4e369c",
+      "createdAt": "2026-06-05T19:35:11.488Z",
+      "userId": "bde52bb3-d1c8-47f0-9254-08908f2f4255",
+      "text": "Unable to extract readable text from this PDF. Please try uploading a plain text (.txt) version.",
+      "textHash": "d749a3d9e24355e5fc34e836ad508326d50af760bfaf1c7237cd81fda2bf0cc0",
+      "originalName": "OINDRILA_CHATTERJEE_RESUME (24).pdf"
+    }
+  ],
+  "analyses": [
+    {
+      "id": "b7471120-d64c-4d50-bfce-c1515b93093b",
+      "createdAt": "2026-06-05T19:32:40.898Z",
+      "resumeId": "165bb13c-a6a8-43b7-8d94-3d5841834182",
+      "score": 82,
+      "summary": "Software professional showing background in technical skills. Analysis highlights strong alignment with core development standards but shows opportunities for additional structural refinements.",
+      "strengths": "[\"Good representation of core technical stack and programming languages.\",\"Clear employment history showing roles and responsibilities.\",\"Good educational qualifications listed.\"]",
+      "weaknesses": "[\"Could benefit from more quantified metrics to show business impact.\",\"Action verbs could be enhanced to show stronger leadership and ownership.\",\"Lack of explicit detail regarding deployment pipelines and system scalability.\"]",
+      "missingKeywords": "[\"CI/CD pipelines\",\"Docker\",\"Unit testing (Jest/Mocha)\",\"Agile methodologies\"]",
+      "suggestions": "[\"Quantify achievements under each job description with key metrics.\",\"Add specific cloud technologies and deployment frameworks used.\",\"Improve readability by utilizing clean formatting and bullet points.\"]",
+      "formattingIssues": "[\"Ensure consistent spacing and date formats throughout the document.\"]"
+    },
+    {
+      "id": "05968cb7-29f6-4c6f-878c-9c97a7e9d255",
+      "createdAt": "2026-06-05T19:35:20.225Z",
+      "resumeId": "a00b8d15-8446-445e-bdb9-f2f4df4e369c",
+      "score": 75,
+      "summary": "Software professional showing background in technical skills. Analysis highlights strong alignment with core development standards but shows opportunities for additional structural refinements.",
+      "strengths": "[\"Good representation of core technical stack and programming languages.\",\"Clear employment history showing roles and responsibilities.\",\"Good educational qualifications listed.\"]",
+      "weaknesses": "[\"Could benefit from more quantified metrics to show business impact.\",\"Action verbs could be enhanced to show stronger leadership and ownership.\",\"Lack of explicit detail regarding deployment pipelines and system scalability.\"]",
+      "missingKeywords": "[\"CI/CD pipelines\",\"Docker\",\"Unit testing (Jest/Mocha)\",\"Agile methodologies\"]",
+      "suggestions": "[\"Quantify achievements under each job description with key metrics.\",\"Add specific cloud technologies and deployment frameworks used.\",\"Improve readability by utilizing clean formatting and bullet points.\"]",
+      "formattingIssues": "[\"Ensure consistent spacing and date formats throughout the document.\"]"
+    }
+  ],
+  "job_matches": [],
+  "ai_chats": []
+}

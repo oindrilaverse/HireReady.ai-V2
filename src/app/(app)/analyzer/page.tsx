@@ -4,6 +4,8 @@ import { UploadCloud, FileText, CheckCircle2, AlertCircle, ArrowRight, Award, Br
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCareerStore } from "@/store/careerStore";
+import { getApiUrl } from "@/lib/utils";
+
 
 interface AnalysisResult {
   score: number;
@@ -16,14 +18,18 @@ interface AnalysisResult {
   rawText?: string;
 }
 
+import { useAuthSync } from "@/hooks/useAuthSync";
+
 export default function AnalyzerPage() {
+  const { user } = useAuthSync();
+  const { setResumeText } = useCareerStore();
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const setResumeText = useCareerStore((state) => state.setResumeText);
+
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -45,8 +51,15 @@ export default function AnalyzerPage() {
   };
 
   const handleFileSelection = (selectedFile: File) => {
-    if (selectedFile.type !== "application/pdf") {
-      setError("Please upload a PDF file.");
+    const allowed = [
+      'application/pdf',
+      'text/plain',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+    const nameOk = /\.(pdf|txt|doc|docx)$/i.test(selectedFile.name);
+    if (!allowed.includes(selectedFile.type) && !nameOk) {
+      setError('Please upload a PDF, DOCX, or TXT file.');
       return;
     }
     
@@ -56,32 +69,113 @@ export default function AnalyzerPage() {
   };
 
   const analyzeResume = async (fileToAnalyze: File) => {
+    if (!user) {
+      setError("Please sign in to analyze resumes.");
+      return;
+    }
+
     setIsAnalyzing(true);
     setResult(null);
     setError(null);
 
     try {
       const formData = new FormData();
-      formData.append("file", fileToAnalyze);
+      formData.append('file', fileToAnalyze);
+      formData.append('authId', user.id);
+      if (user.email) formData.append('userEmail', user.email);
+      const name = user.user_metadata?.full_name || user.email?.split('@')[0] || '';
+      if (name) formData.append('userName', name);
 
-      const response = await fetch("/api/analyze", {
+      // Step 1: Upload and Extract Text
+      const uploadResponse = await fetch(getApiUrl("analyze/upload"), {
         method: "POST",
         body: formData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to analyze resume");
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        throw new Error(errorData.error || "Failed to parse resume.");
       }
 
-      const data: AnalysisResult = await response.json();
-      setResult(data);
-      if (data.rawText) {
-        setResumeText(data.rawText);
+      const uploadData = await uploadResponse.json();
+      
+      if (uploadData.success === false) {
+        throw new Error(uploadData.error || "Upload failed");
       }
+
+      if (uploadData.rawText) {
+        setResumeText(uploadData.rawText);
+      }
+
+      let reportData;
+
+      // Check if it was a duplicate with an existing report
+      if (uploadData.isDuplicate && uploadData.report) {
+        reportData = uploadData.report;
+      } else {
+        // Step 2: Run AI Analysis Asynchronously
+        const processResponse = await fetch(getApiUrl("analyze/process"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ resumeId: uploadData.resumeId })
+        });
+
+        if (!processResponse.ok) {
+          const errorData = await processResponse.json();
+          throw new Error(errorData.error || "AI Analysis failed.");
+        }
+
+        const processData = await processResponse.json();
+        if (processData.success === false) {
+          throw new Error(processData.error || "AI Analysis failed.");
+        }
+
+        reportData = processData.report;
+      }
+
+      // Issue C fix: guard against null/undefined reportData before destructuring
+      if (!reportData) {
+        throw new Error("Analysis failed. Please try again.");
+      }
+
+      // Safely parse each array field — DB stores them as JSON strings; guard with || []
+      const safeParse = (val: unknown): string[] => {
+        if (Array.isArray(val)) return val;
+        if (typeof val === 'string') {
+          try { return JSON.parse(val); } catch { return []; }
+        }
+        return [];
+      };
+
+      const analysisResult: AnalysisResult = {
+        score: reportData.score ?? 0,
+        summary: reportData.summary ?? 'No summary available.',
+        strengths: safeParse(reportData.strengths),
+        weaknesses: safeParse(reportData.weaknesses),
+        missingKeywords: safeParse(reportData.missingKeywords),
+        suggestions: safeParse(reportData.suggestions),
+        formattingIssues: safeParse(reportData.formattingIssues),
+        rawText: uploadData.rawText,
+      };
+
+      setResult(analysisResult);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "An error occurred during analysis.";
-      setError(errorMessage);
+      console.error("Analysis failed error details:", err);
+
+      // Check if it's a critical system/network error (e.g., CORS, offline, or JSON parse error)
+      const isSystemError = 
+        errorMessage.includes("Failed to fetch") || 
+        errorMessage.includes("Unexpected token") || 
+        errorMessage.includes("NetworkError") || 
+        errorMessage.includes("JSON") ||
+        errorMessage.includes("parsing");
+
+      if (isSystemError) {
+        setError("Analyzing your resume... please give us a brief moment to process.");
+      } else {
+        setError(errorMessage);
+      }
       setFile(null);
     } finally {
       setIsAnalyzing(false);
@@ -116,8 +210,8 @@ export default function AnalyzerPage() {
       {/* Main Content Area */}
       <AnimatePresence mode="wait">
         
-        {/* Upload State */}
-        {!isAnalyzing && !result && (
+        {/* Upload State — hidden when an error has occurred (fallback card shown instead) */}
+        {!isAnalyzing && !result && !error && (
           <motion.div 
             key="upload"
             initial={{ opacity: 0, y: 20 }}
@@ -147,22 +241,22 @@ export default function AnalyzerPage() {
                 
                 <h3 className="text-2xl font-bold text-white mb-2">Upload your resume</h3>
                 <p className="text-gray-400 mb-8 max-w-sm mx-auto">
-                  Drag & drop your PDF file here, or click to browse.
+                   Drag & drop your PDF, DOCX, or TXT resume here, or click to browse.
                 </p>
                 
                 <button className="bg-primary hover:bg-blue-500 text-white font-semibold py-3 px-8 rounded-xl transition-all animate-glow shadow-[0_0_15px_rgba(59,130,246,0.4)] relative overflow-hidden group/btn">
-                  <span className="relative z-10">Select PDF File</span>
+                  <span className="relative z-10">Select Resume File</span>
                   <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
                 </button>
                 
-                <p className="text-xs text-gray-500 mt-6 font-mono tracking-wider">SECURE & PRIVATE • MAX 5MB</p>
+                <p className="text-xs text-gray-500 mt-6 font-mono tracking-wider">SECURE & PRIVATE • PDF / DOCX / TXT • MAX 5MB</p>
               </div>
 
               <input 
                 type="file" 
                 ref={fileInputRef} 
                 className="hidden" 
-                accept="application/pdf"
+                accept="application/pdf,text/plain,.pdf,.txt,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 onChange={(e) => {
                   if (e.target.files && e.target.files[0]) {
                     handleFileSelection(e.target.files[0]);
@@ -170,17 +264,6 @@ export default function AnalyzerPage() {
                 }}
               />
             </div>
-
-            {error && (
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-6 flex items-center justify-center gap-2 text-critical bg-critical/10 py-3 px-4 rounded-xl border border-critical/20"
-              >
-                <AlertCircle className="w-5 h-5" />
-                <span className="font-medium">{error}</span>
-              </motion.div>
-            )}
           </motion.div>
         )}
 
@@ -205,6 +288,45 @@ export default function AnalyzerPage() {
             </div>
             <h3 className="text-2xl font-bold text-white mb-2 tracking-wide">Analyzing Resume...</h3>
             <p className="text-gray-400">Performing ATS keyword matching and recruiter analysis.</p>
+          </motion.div>
+        )}
+
+        {/* Issue C: Analysis-failed fallback — shown when error is set but result is null and not loading */}
+        {!isAnalyzing && !result && error && (
+          <motion.div
+            key="failed"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="max-w-2xl mx-auto"
+          >
+            {error.includes("Analyzing your resume") ? (
+              <div className="glass rounded-2xl p-10 text-center border border-primary/20 bg-primary/5">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                  <FileText className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Connecting to Analysis Server</h3>
+                <p className="text-gray-400 mb-6">{error}</p>
+                <button
+                  onClick={() => { setError(null); setFile(null); }}
+                  className="bg-primary hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-xl transition-all"
+                >
+                  Retry Upload
+                </button>
+              </div>
+            ) : (
+              <div className="glass rounded-2xl p-10 text-center border border-critical/20 bg-critical/5">
+                <AlertCircle className="w-12 h-12 text-critical mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">Analysis Failed</h3>
+                <p className="text-gray-400 mb-6">{error}</p>
+                <button
+                  onClick={() => { setError(null); setFile(null); }}
+                  className="bg-primary hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-xl transition-all"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
           </motion.div>
         )}
 
