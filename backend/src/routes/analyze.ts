@@ -12,7 +12,30 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const require = createRequire(import.meta.url);
 const pdfParseModule = require('pdf-parse');
-const pdf = typeof pdfParseModule === 'function' ? pdfParseModule : (pdfParseModule.default || pdfParseModule);
+let pdfParserFn: (buffer: Buffer) => Promise<string>;
+
+if (typeof pdfParseModule === 'function') {
+  pdfParserFn = async (buffer: Buffer) => {
+    const data = await pdfParseModule(buffer);
+    return data.text || '';
+  };
+} else if (pdfParseModule && typeof pdfParseModule.PDFParse === 'function') {
+  pdfParserFn = async (buffer: Buffer) => {
+    const parser = new pdfParseModule.PDFParse({ data: buffer });
+    const result = await parser.getText();
+    return result.text || '';
+  };
+} else if (pdfParseModule && pdfParseModule.default && typeof pdfParseModule.default.PDFParse === 'function') {
+  pdfParserFn = async (buffer: Buffer) => {
+    const parser = new pdfParseModule.default.PDFParse({ data: buffer });
+    const result = await parser.getText();
+    return result.text || '';
+  };
+} else {
+  pdfParserFn = async () => {
+    throw new Error('No valid PDF parser found in pdf-parse module');
+  };
+}
 const logFile = path.join(__dirname, '../../debug.log');
 
 const router = Router();
@@ -85,8 +108,7 @@ router.post('/upload', (req, res, next) => {
       console.log(`[ANALYZER] Text file extracted directly. Length: ${text.length}`);
     } else if (isPdf) {
       try {
-        const data = await pdf(file.buffer);
-        text = data.text || '';
+        text = await pdfParserFn(file.buffer);
         console.log(`[ANALYZER] PDF parsed successfully. Length: ${text.length}`);
       } catch (pdfError) {
         const errorMsg = `[ANALYZER] PDF Parse Error: ${pdfError instanceof Error ? pdfError.message : String(pdfError)}. Attempting AI fallback.\n`;
