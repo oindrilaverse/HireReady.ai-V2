@@ -21,13 +21,13 @@ if (typeof pdfParseModule === 'function') {
   };
 } else if (pdfParseModule && typeof pdfParseModule.PDFParse === 'function') {
   pdfParserFn = async (buffer: Buffer) => {
-    const parser = new pdfParseModule.PDFParse({ data: buffer });
+    const parser = new pdfParseModule.PDFParse({ data: new Uint8Array(buffer) });
     const result = await parser.getText();
     return result.text || '';
   };
 } else if (pdfParseModule && pdfParseModule.default && typeof pdfParseModule.default.PDFParse === 'function') {
   pdfParserFn = async (buffer: Buffer) => {
-    const parser = new pdfParseModule.default.PDFParse({ data: buffer });
+    const parser = new pdfParseModule.default.PDFParse({ data: new Uint8Array(buffer) });
     const result = await parser.getText();
     return result.text || '';
   };
