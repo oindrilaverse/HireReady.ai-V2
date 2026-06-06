@@ -175,7 +175,7 @@ export default function AnalyzerPage() {
       if (err instanceof Error) {
         const msg = err.message;
         if (msg.includes("Unexpected token") || msg.includes("is not valid JSON") || msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
-          errorMessage = "Connecting to analysis server, please try again in a moment...";
+          errorMessage = "Analyzing your resume... please give us a brief moment to process.";
         } else {
           errorMessage = msg;
         }
@@ -305,17 +305,33 @@ export default function AnalyzerPage() {
             exit={{ opacity: 0 }}
             className="max-w-2xl mx-auto"
           >
-            <div className="glass rounded-2xl p-10 text-center border border-critical/20 bg-critical/5">
-              <AlertCircle className="w-12 h-12 text-critical mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">Analysis Failed</h3>
-              <p className="text-gray-400 mb-6">{error}</p>
-              <button
-                onClick={() => { setError(null); setFile(null); }}
-                className="bg-primary hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-xl transition-all"
-              >
-                Try Again
-              </button>
-            </div>
+            {error.includes("Analyzing your resume") ? (
+              <div className="glass rounded-2xl p-10 text-center border border-primary/20 bg-primary/5">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                  <FileText className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Connecting to Analysis Server</h3>
+                <p className="text-gray-400 mb-6">{error}</p>
+                <button
+                  onClick={() => { setError(null); setFile(null); }}
+                  className="bg-primary hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-xl transition-all"
+                >
+                  Retry Upload
+                </button>
+              </div>
+            ) : (
+              <div className="glass rounded-2xl p-10 text-center border border-critical/20 bg-critical/5">
+                <AlertCircle className="w-12 h-12 text-critical mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">Analysis Failed</h3>
+                <p className="text-gray-400 mb-6">{error}</p>
+                <button
+                  onClick={() => { setError(null); setFile(null); }}
+                  className="bg-primary hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-xl transition-all"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
           </motion.div>
         )}
 

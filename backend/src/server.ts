@@ -40,11 +40,8 @@ process.on('uncaughtException', (err) => {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Improved CORS configuration
-app.use(cors({
-  origin: true, 
-  credentials: true
-}));
+// Temporarily allow all origins to bypass deployment strictness
+app.use(cors({ origin: '*' }));
 
 // Request Timeout Middleware (Vercel Serverless aligned: 25s)
 app.use((req, res, next) => {
