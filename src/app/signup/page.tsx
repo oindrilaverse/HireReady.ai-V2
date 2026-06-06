@@ -16,6 +16,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isAutoLoggedIn, setIsAutoLoggedIn] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -50,6 +51,37 @@ export default function SignupPage() {
           }),
         });
 
+        // Check if session is already active (email confirmation is off)
+        if (data.session) {
+          setIsAutoLoggedIn(true);
+          setSuccess(true);
+          setTimeout(() => {
+            router.push('/analyzer');
+          }, 1500);
+          return;
+        }
+
+        // Email confirmation is on, or session was not returned.
+        // Let's attempt automatic login using the typed credentials
+        try {
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          if (!signInError && signInData.session) {
+            setIsAutoLoggedIn(true);
+            setSuccess(true);
+            setTimeout(() => {
+              router.push('/analyzer');
+            }, 1500);
+            return;
+          }
+        } catch (signInErr) {
+          console.warn("Automatic sign-in failed:", signInErr);
+        }
+
+        // Fallback if auto sign-in failed (email confirmation is actually required)
         setSuccess(true);
         setTimeout(() => {
           router.push('/login');
@@ -64,7 +96,7 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-transparent flex items-center justify-center p-6">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -73,9 +105,13 @@ export default function SignupPage() {
           <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-10 h-10 text-blue-400" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-4">Account Created!</h1>
+          <h1 className="text-3xl font-bold text-white mb-4">
+            {isAutoLoggedIn ? "Welcome to HireReady.AI!" : "Account Created!"}
+          </h1>
           <p className="text-slate-400 mb-8">
-            Check your email to verify your account. Redirecting to login...
+            {isAutoLoggedIn 
+              ? "Logging you in automatically..." 
+              : "Check your email to verify your account. Redirecting to login..."}
           </p>
           <Loader2 className="w-6 h-6 animate-spin text-blue-500 mx-auto" />
         </motion.div>
@@ -84,7 +120,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-transparent flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
       {/* Background blobs */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full" />
