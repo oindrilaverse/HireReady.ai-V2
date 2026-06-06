@@ -87,20 +87,27 @@ export default function AnalyzerPage() {
       if (name) formData.append('userName', name);
 
       // Step 1: Upload and Extract Text
-      const uploadResponse = await fetch(getApiUrl("analyze/upload"), {
+      const uploadUrl = getApiUrl("analyze/upload");
+      console.log(`[ANALYZER] Calling upload API: ${uploadUrl}`);
+      const uploadResponse = await fetch(uploadUrl, {
         method: "POST",
         body: formData,
       });
 
-      if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json();
-        throw new Error(errorData.error || "Failed to parse resume.");
+      const uploadText = await uploadResponse.text();
+      console.log(`[ANALYZER] Response status: ${uploadResponse.status}`);
+      console.log("API Response:", uploadText);
+
+      let uploadData;
+      try {
+        uploadData = JSON.parse(uploadText);
+      } catch (parseErr) {
+        console.error("[ANALYZER] Failed to parse upload response as JSON:", parseErr);
+        throw new Error(`Invalid JSON response from server. Status: ${uploadResponse.status}. Body starts with: ${uploadText.substring(0, 100)}`);
       }
 
-      const uploadData = await uploadResponse.json();
-      
-      if (uploadData.success === false) {
-        throw new Error(uploadData.error || "Upload failed");
+      if (!uploadResponse.ok || uploadData.success === false) {
+        throw new Error(uploadData.error || "Failed to parse resume.");
       }
 
       if (uploadData.rawText) {
@@ -114,19 +121,27 @@ export default function AnalyzerPage() {
         reportData = uploadData.report;
       } else {
         // Step 2: Run AI Analysis Asynchronously
-        const processResponse = await fetch(getApiUrl("analyze/process"), {
+        const processUrl = getApiUrl("analyze/process");
+        console.log(`[ANALYZER] Calling process API: ${processUrl}`);
+        const processResponse = await fetch(processUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ resumeId: uploadData.resumeId })
         });
 
-        if (!processResponse.ok) {
-          const errorData = await processResponse.json();
-          throw new Error(errorData.error || "AI Analysis failed.");
+        const processText = await processResponse.text();
+        console.log(`[ANALYZER] Response status: ${processResponse.status}`);
+        console.log("API Response:", processText);
+
+        let processData;
+        try {
+          processData = JSON.parse(processText);
+        } catch (parseErr) {
+          console.error("[ANALYZER] Failed to parse process response as JSON:", parseErr);
+          throw new Error(`Invalid JSON response from server. Status: ${processResponse.status}. Body starts with: ${processText.substring(0, 100)}`);
         }
 
-        const processData = await processResponse.json();
-        if (processData.success === false) {
+        if (!processResponse.ok || processData.success === false) {
           throw new Error(processData.error || "AI Analysis failed.");
         }
 
