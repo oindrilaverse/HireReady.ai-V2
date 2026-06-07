@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import { Target, Search, CheckCircle2, XCircle, ChevronRight, Activity, Zap } from "lucide-react";
 
