@@ -76,8 +76,8 @@ export function BackgroundNet() {
           mouse.y,
           320
         );
-        gradient.addColorStop(0, "rgba(59, 130, 246, 0.07)"); // Neon blue spotlight
-        gradient.addColorStop(0.5, "rgba(139, 92, 246, 0.02)"); // Purple border glow
+        gradient.addColorStop(0, "rgba(255, 0, 127, 0.08)"); // Neon pink spotlight
+        gradient.addColorStop(0.5, "rgba(168, 85, 247, 0.03)"); // Electric purple border glow
         gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, width, height);
@@ -96,7 +96,7 @@ export function BackgroundNet() {
           if (dist < maxDistance) {
             // Draw line
             const alpha = (1 - dist / maxDistance) * 0.11;
-            ctx.strokeStyle = `rgba(59, 130, 246, ${alpha})`;
+            ctx.strokeStyle = `rgba(255, 0, 127, ${alpha})`;
             ctx.lineWidth = 0.75;
             ctx.beginPath();
             ctx.moveTo(n1.x, n1.y);
@@ -126,7 +126,7 @@ export function BackgroundNet() {
         }
 
         // Draw node
-        ctx.fillStyle = n1.vx > 0 ? "rgba(59, 130, 246, 0.5)" : "rgba(255, 255, 255, 0.4)";
+        ctx.fillStyle = n1.vx > 0 ? "rgba(255, 0, 127, 0.5)" : "rgba(168, 85, 247, 0.4)";
         ctx.beginPath();
         ctx.arc(n1.x, n1.y, n1.radius, 0, Math.PI * 2);
         ctx.fill();

@@ -302,7 +302,7 @@ export default function AnalyzerPage() {
             <div 
               className={`glass relative overflow-hidden border-2 border-dashed rounded-3xl p-16 text-center transition-all duration-300 group cursor-pointer ${
                 isDragging 
-                  ? "border-primary bg-primary/5 scale-[1.02] shadow-[0_0_40px_rgba(59,130,246,0.15)]" 
+                  ? "border-primary bg-primary/5 scale-[1.02] shadow-[0_0_40px_rgba(255,0,127,0.15)]" 
                   : "border-[#1e1e30] hover:border-primary/50 hover:bg-white/[0.02]"
               }`}
               onDragOver={handleDragOver}
@@ -314,7 +314,7 @@ export default function AnalyzerPage() {
               <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
               <div className="relative z-10">
-                <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 group-hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 group-hover:shadow-[0_0_20px_rgba(255,0,127,0.3)]">
                   <UploadCloud className="w-10 h-10 text-gray-400 group-hover:text-primary transition-colors" />
                 </div>
                 
@@ -323,7 +323,7 @@ export default function AnalyzerPage() {
                    Drag & drop your PDF, DOCX, or TXT resume here, or click to browse.
                 </p>
                 
-                <button className="bg-primary hover:bg-blue-500 text-white font-semibold py-3 px-8 rounded-xl transition-all animate-glow shadow-[0_0_15px_rgba(59,130,246,0.4)] relative overflow-hidden group/btn">
+                <button className="bg-primary hover:bg-[#ff007f]/90 text-white font-semibold py-3 px-8 rounded-xl transition-all animate-glow shadow-[0_0_15px_rgba(255,0,127,0.4)] relative overflow-hidden group/btn">
                   <span className="relative z-10">Select Resume File</span>
                   <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
                 </button>
@@ -457,7 +457,7 @@ export default function AnalyzerPage() {
                 <p className="text-gray-400 mb-6">{error}</p>
                 <button
                   onClick={() => { clearCache(); setError(null); setFile(null); }}
-                  className="bg-primary hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-xl transition-all"
+                  className="bg-primary hover:bg-[#ff007f]/90 text-white font-semibold py-2 px-6 rounded-xl transition-all"
                 >
                   Retry Upload
                 </button>
@@ -469,7 +469,7 @@ export default function AnalyzerPage() {
                 <p className="text-gray-400 mb-6">{error}</p>
                 <button
                   onClick={() => { clearCache(); setError(null); setFile(null); }}
-                  className="bg-primary hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-xl transition-all"
+                  className="bg-primary hover:bg-[#ff007f]/90 text-white font-semibold py-2 px-6 rounded-xl transition-all"
                 >
                   Try Again
                 </button>
@@ -744,7 +744,7 @@ export default function AnalyzerPage() {
               <div className="flex flex-col gap-3">
                 <a
                   href="/pricing"
-                  className="block w-full bg-primary hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(0,123,255,0.35)] hover:shadow-[0_0_30px_rgba(0,123,255,0.55)]"
+                  className="block w-full bg-primary hover:bg-[#ff007f]/90 text-white font-bold py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(255,0,127,0.35)] hover:shadow-[0_0_30px_rgba(255,0,127,0.55)]"
                 >
                   Upgrade to Pro →
                 </a>

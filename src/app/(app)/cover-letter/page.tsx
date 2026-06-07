@@ -9,7 +9,7 @@ export default function CoverLetterPage() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-20 h-20 rounded-3xl bg-primary/20 flex items-center justify-center border border-primary/30 shadow-[0_0_30px_rgba(59,130,246,0.2)]"
+        className="w-20 h-20 rounded-3xl bg-primary/20 flex items-center justify-center border border-primary/30 shadow-[0_0_30px_rgba(255,0,127,0.2)]"
       >
         <Briefcase className="w-10 h-10 text-primary" />
       </motion.div>

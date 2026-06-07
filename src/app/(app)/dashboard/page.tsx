@@ -27,6 +27,8 @@ export default function DashboardPage() {
           const envelope = await res.json();
           if (envelope.success && envelope.data) {
             setDashboardData(envelope.data);
+          } else {
+            setDashboardData(envelope);
           }
         }
       } catch (error) {

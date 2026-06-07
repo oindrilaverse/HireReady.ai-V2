@@ -115,7 +115,7 @@ export default function ScanHistoryPage() {
           <p className="text-gray-400 text-sm mb-6">Please log in to view your scan history.</p>
           <Link
             href="/login"
-            className="inline-block bg-primary hover:bg-blue-500 text-white font-semibold py-2.5 px-8 rounded-xl transition-all"
+            className="inline-block bg-primary hover:bg-[#ff007f]/90 text-white font-semibold py-2.5 px-8 rounded-xl transition-all"
           >
             Go to Login
           </Link>
@@ -135,7 +135,7 @@ export default function ScanHistoryPage() {
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 -z-10"
-        style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(0,123,255,0.08) 0%, transparent 60%)" }}
+        style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(255,0,127,0.08) 0%, transparent 60%)" }}
       />
 
       <div className="max-w-5xl mx-auto px-4 py-10 space-y-10">
@@ -170,7 +170,7 @@ export default function ScanHistoryPage() {
               className="glass rounded-2xl p-10 text-center border border-red-500/20 bg-red-500/5"
             >
               <p className="text-red-400 mb-4">{error}</p>
-              <button onClick={loadData} className="bg-primary hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-xl transition-all">
+              <button onClick={loadData} className="bg-primary hover:bg-[#ff007f]/90 text-white font-semibold py-2 px-6 rounded-xl transition-all">
                 Try Again
               </button>
             </motion.div>
@@ -260,7 +260,7 @@ export default function ScanHistoryPage() {
                     <FileText className="w-10 h-10 text-gray-700 mx-auto mb-4" />
                     <p className="text-gray-500 mb-2">No scans recorded yet.</p>
                     <p className="text-gray-600 text-sm mb-6">Upload a resume on the Analyzer page to see your history here.</p>
-                    <Link href="/analyzer" className="inline-block bg-primary hover:bg-blue-500 text-white font-semibold py-2.5 px-8 rounded-xl transition-all">
+                    <Link href="/analyzer" className="inline-block bg-primary hover:bg-[#ff007f]/90 text-white font-semibold py-2.5 px-8 rounded-xl transition-all">
                       Go to Analyzer
                     </Link>
                   </motion.div>
@@ -290,7 +290,7 @@ export default function ScanHistoryPage() {
                     <p className="text-white font-bold">You&apos;re almost at your free limit</p>
                     <p className="text-gray-400 text-sm mt-0.5">Upgrade to Pro for unlimited scans, priority AI, and full history.</p>
                   </div>
-                  <button className="flex-shrink-0 bg-primary hover:bg-blue-500 text-white font-semibold py-2.5 px-7 rounded-xl transition-all shadow-[0_0_20px_rgba(0,123,255,0.3)]">
+                  <button className="flex-shrink-0 bg-primary hover:bg-[#ff007f]/90 text-white font-semibold py-2.5 px-7 rounded-xl transition-all shadow-[0_0_20px_rgba(255,0,127,0.3)]">
                     Upgrade to Pro
                   </button>
                 </motion.section>

@@ -35,7 +35,7 @@ export function BottomNav() {
             )}
           >
             {isActive && (
-              <span className="absolute top-0 w-8 h-0.5 bg-primary rounded-b-full shadow-[0_0_10px_rgba(167,139,250,0.8)]" />
+              <span className="absolute top-0 w-8 h-0.5 bg-primary rounded-b-full shadow-[0_0_10px_rgba(255,0,127,0.8)]" />
             )}
             <item.icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-gray-400")} />
             <span className="text-[10px] font-medium">{item.name}</span>

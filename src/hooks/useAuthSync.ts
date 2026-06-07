@@ -43,7 +43,7 @@ export function useAuthSync() {
               const res = await fetch(getApiUrl(`/users/${session.user.id}/dashboard`));
               if (res.ok) {
                 const data = await res.json();
-                setDashboardData(data);
+                setDashboardData(data.data || data);
                 setSynced(true);
               }
             }
