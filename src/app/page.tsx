@@ -29,14 +29,14 @@ const steps = [
     icon: UploadCloud,
     title: "Upload Your Resume",
     desc: "Drop your PDF, DOCX, or TXT file. Our parser handles any format — no reformatting needed.",
-    color: "#007bff",
+    color: "#ff007f",
   },
   {
     number: "02",
     icon: Cpu,
     title: "AI Analyses Every Line",
     desc: "Gemini AI scores your resume on ATS keywords, formatting, impact verbs, and skill gaps in seconds.",
-    color: "#8b5cf6",
+    color: "#a855f7",
   },
   {
     number: "03",
@@ -52,13 +52,13 @@ const features = [
     icon: FileText,
     title: "Smart PDF Parsing",
     desc: "Advanced AI extracts and structures your experience flawlessly from any resume format.",
-    color: "#007bff",
+    color: "#ff007f",
   },
   {
     icon: BarChart2,
     title: "ATS Score Breakdown",
     desc: "Detailed recruiter-level scoring across keywords, formatting, impact, and readability.",
-    color: "#8b5cf6",
+    color: "#a855f7",
   },
   {
     icon: Zap,
@@ -119,12 +119,12 @@ export default function LandingPage() {
 
       {/* ── Navbar ─────────────────────────────────────────────────────── */}
       <nav className="container mx-auto px-6 py-5 flex items-center justify-between relative z-20">
-        <div className="flex items-center gap-2 text-xl font-bold tracking-tighter">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-[#007bff] to-[#8b5cf6] flex items-center justify-center border border-white/10 shadow-[0_0_15px_rgba(0,123,255,0.4)]">
+        <div className="flex items-center gap-2 text-xl font-bold tracking-tighter font-display">
+          <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-[#ff007f] to-[#a855f7] flex items-center justify-center border border-white/10 shadow-[0_0_15px_rgba(255,0,127,0.4)]">
             <span className="text-white text-base font-extrabold">H</span>
           </div>
           <span className="text-white">
-            HireReady<span className="text-[#007bff]">.AI</span>
+            HireReady<span className="text-[#ff007f]">.AI</span>
           </span>
         </div>
 
@@ -151,24 +151,24 @@ export default function LandingPage() {
         <div
           aria-hidden
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(0,123,255,0.07) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, rgba(255,0,127,0.06) 0%, transparent 70%)" }}
         />
 
         <motion.div {...fadeUp(0)} className="max-w-4xl mx-auto">
           {/* Live badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#007bff]/10 border border-[#007bff]/25 text-[#007bff] text-xs font-bold mb-8 tracking-wide">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#ff007f]/10 border border-[#ff007f]/25 text-[#ff007f] text-xs font-bold mb-8 tracking-wide">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#007bff] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#007bff]" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff007f] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff007f]" />
             </span>
             AI-Powered ATS Analyzer — Live
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.08]">
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.08] font-display">
             <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-zinc-400">
               MAKE IT POSSIBLE WITH<br className="hidden md:block" />
             </span>
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#007bff] to-[#8b5cf6]">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff007f] to-[#a855f7]">
               HireReady.AI
             </span>
           </h1>
@@ -181,7 +181,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/signup"
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#007bff] to-[#8b5cf6] text-white rounded-full font-bold text-base transition-all hover:opacity-90 hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(0,123,255,0.35)]"
+              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#ff007f] to-[#a855f7] text-white rounded-full font-bold text-base transition-all hover:opacity-90 hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(255,0,127,0.35)]"
             >
               Analyze My Resume Free <ArrowRight className="w-4 h-4" />
             </Link>
@@ -203,10 +203,10 @@ export default function LandingPage() {
       {/* ── How It Works ───────────────────────────────────────────────── */}
       <section id="how-it-works" className="container mx-auto px-6 py-24 relative z-10">
         <motion.div {...fadeUp(0.05)} className="text-center mb-16">
-          <span className="text-xs font-bold tracking-widest uppercase text-[#007bff] bg-[#007bff]/10 border border-[#007bff]/20 px-3 py-1 rounded-full">
+          <span className="text-xs font-bold tracking-widest uppercase text-[#ff007f] bg-[#ff007f]/10 border border-[#ff007f]/20 px-3 py-1 rounded-full">
             How It Works
           </span>
-          <h2 className="mt-4 text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="mt-4 text-3xl md:text-4xl font-extrabold text-white tracking-tight font-display">
             From upload to offer letter — 3 steps
           </h2>
           <p className="mt-3 text-zinc-400 max-w-xl mx-auto text-sm">
@@ -219,7 +219,7 @@ export default function LandingPage() {
           <div
             aria-hidden
             className="hidden md:block absolute top-[3.25rem] left-[calc(16.66%+2rem)] right-[calc(16.66%+2rem)] h-px"
-            style={{ background: "linear-gradient(90deg, rgba(0,123,255,0.3), rgba(139,92,246,0.3), rgba(16,185,129,0.3))" }}
+            style={{ background: "linear-gradient(90deg, rgba(255,0,127,0.3), rgba(168,85,247,0.3), rgba(16,185,129,0.3))" }}
           />
 
           {steps.map((step, i) => (
@@ -266,10 +266,10 @@ export default function LandingPage() {
       {/* ── Features ───────────────────────────────────────────────────── */}
       <section id="features" className="container mx-auto px-6 py-24 relative z-10">
         <motion.div {...fadeUp(0.05)} className="text-center mb-16">
-          <span className="text-xs font-bold tracking-widest uppercase text-[#8b5cf6] bg-[#8b5cf6]/10 border border-[#8b5cf6]/20 px-3 py-1 rounded-full">
+          <span className="text-xs font-bold tracking-widest uppercase text-[#a855f7] bg-[#a855f7]/10 border border-[#a855f7]/20 px-3 py-1 rounded-full">
             Features
           </span>
-          <h2 className="mt-4 text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="mt-4 text-3xl md:text-4xl font-extrabold text-white tracking-tight font-display">
             Everything you need to get hired
           </h2>
         </motion.div>
@@ -297,7 +297,7 @@ export default function LandingPage() {
       {/* ── Testimonials ───────────────────────────────────────────────── */}
       <section className="container mx-auto px-6 py-24 relative z-10">
         <motion.div {...fadeUp(0.05)} className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight font-display">
             Loved by job seekers
           </h2>
           <p className="mt-3 text-zinc-400 text-sm max-w-md mx-auto">
@@ -331,12 +331,12 @@ export default function LandingPage() {
       <section className="container mx-auto px-6 py-16 relative z-10">
         <motion.div
           {...fadeUp(0.05)}
-          className="max-w-3xl mx-auto glass rounded-3xl p-10 border border-white/8 bg-gradient-to-br from-[#007bff]/5 via-transparent to-[#8b5cf6]/5 text-center"
+          className="max-w-3xl mx-auto glass rounded-3xl p-10 border border-white/8 bg-gradient-to-br from-[#ff007f]/5 via-transparent to-[#a855f7]/5 text-center"
         >
-          <span className="text-xs font-bold tracking-widest uppercase text-[#007bff] bg-[#007bff]/10 border border-[#007bff]/20 px-3 py-1 rounded-full">
+          <span className="text-xs font-bold tracking-widest uppercase text-[#ff007f] bg-[#ff007f]/10 border border-[#ff007f]/20 px-3 py-1 rounded-full">
             Pricing
           </span>
-          <h2 className="mt-5 text-3xl font-extrabold text-white tracking-tight">
+          <h2 className="mt-5 text-3xl font-extrabold text-white tracking-tight font-display">
             Start free. Upgrade when ready.
           </h2>
           <p className="mt-3 text-zinc-400 text-sm max-w-md mx-auto">
@@ -352,10 +352,10 @@ export default function LandingPage() {
             </div>
             <span className="text-zinc-700 font-bold hidden sm:block">vs</span>
             <div
-              className="text-left rounded-2xl px-6 py-4 border border-[#007bff]/40 w-full sm:w-auto"
-              style={{ background: "linear-gradient(135deg, rgba(0,123,255,0.12), rgba(139,92,246,0.08))" }}
+              className="text-left rounded-2xl px-6 py-4 border border-[#ff007f]/40 w-full sm:w-auto"
+              style={{ background: "linear-gradient(135deg, rgba(255,0,127,0.12), rgba(168,85,247,0.08))" }}
             >
-              <p className="text-xs text-[#007bff] uppercase tracking-widest mb-1 font-bold">Pro</p>
+              <p className="text-xs text-[#ff007f] uppercase tracking-widest mb-1 font-bold">Pro</p>
               <p className="text-3xl font-extrabold text-white">$12<span className="text-zinc-500 text-sm font-medium ml-1">/ mo</span></p>
               <p className="text-zinc-400 text-xs mt-1">Unlimited · Full reports · Job matcher</p>
             </div>
@@ -363,7 +363,7 @@ export default function LandingPage() {
 
           <Link
             href="/pricing"
-            className="mt-8 inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-[#007bff] to-[#8b5cf6] text-white rounded-full font-bold text-sm hover:opacity-90 hover:-translate-y-0.5 transition-all shadow-[0_0_25px_rgba(0,123,255,0.3)]"
+            className="mt-8 inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-[#ff007f] to-[#a855f7] text-white rounded-full font-bold text-sm hover:opacity-90 hover:-translate-y-0.5 transition-all shadow-[0_0_25px_rgba(255,0,127,0.3)]"
           >
             View Full Pricing <ChevronRight className="w-4 h-4" />
           </Link>
@@ -373,9 +373,9 @@ export default function LandingPage() {
       {/* ── Final CTA ──────────────────────────────────────────────────── */}
       <section className="container mx-auto px-6 py-24 text-center relative z-10">
         <motion.div {...fadeUp(0.05)} className="max-w-2xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 leading-tight">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 leading-tight font-display">
             Your dream job is{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#007bff] to-[#8b5cf6]">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff007f] to-[#a855f7]">
               one upload away.
             </span>
           </h2>
@@ -384,7 +384,7 @@ export default function LandingPage() {
           </p>
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2 px-10 py-4 bg-gradient-to-r from-[#007bff] to-[#8b5cf6] text-white rounded-full font-bold text-base hover:opacity-90 hover:-translate-y-0.5 transition-all active:scale-95 shadow-[0_0_35px_rgba(0,123,255,0.4)]"
+            className="inline-flex items-center gap-2 px-10 py-4 bg-gradient-to-r from-[#ff007f] to-[#a855f7] text-white rounded-full font-bold text-base hover:opacity-90 hover:-translate-y-0.5 transition-all active:scale-95 shadow-[0_0_35px_rgba(255,0,127,0.4)]"
           >
             Get Started Free <ArrowRight className="w-5 h-5" />
           </Link>

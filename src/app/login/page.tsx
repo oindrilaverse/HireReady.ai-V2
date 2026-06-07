@@ -41,7 +41,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-6 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#040406] flex items-center justify-center p-6 relative overflow-hidden font-sans">
       <BackgroundNet />
 
       <motion.div 
@@ -50,13 +50,13 @@ export default function LoginPage() {
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold tracking-tighter mb-4">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-[#007bff] to-[#8b5cf6] flex items-center justify-center border border-white/10 shadow-[0_0_15px_rgba(0,123,255,0.4)]">
+          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold tracking-tighter mb-4 font-display">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-[#ff007f] to-[#a855f7] flex items-center justify-center border border-white/10 shadow-[0_0_15px_rgba(255,0,127,0.4)]">
               <span className="text-white text-lg font-extrabold">H</span>
             </div>
-            <span className="text-white">HireReady<span className="text-[#007bff]">.AI</span></span>
+            <span className="text-white">HireReady<span className="text-[#ff007f]">.AI</span></span>
           </Link>
-          <h1 className="text-3xl font-extrabold text-white">Welcome Back</h1>
+          <h1 className="text-3xl font-extrabold text-white font-display">Welcome Back</h1>
           <p className="text-zinc-400 mt-2">Enter your credentials to access your dashboard</p>
         </div>
 
@@ -71,7 +71,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full bg-[#0c0c0c]/60 border border-white/5 rounded-xl py-3 pl-11 pr-4 text-white focus:ring-2 focus:ring-[#007bff]/30 focus:border-[#007bff] outline-none transition-all"
+                  className="w-full bg-[#0c0c0c]/60 border border-white/5 rounded-xl py-3 pl-11 pr-4 text-white focus:ring-2 focus:ring-[#ff007f]/30 focus:border-[#ff007f] outline-none transition-all"
                   placeholder="name@example.com"
                 />
               </div>
@@ -80,7 +80,7 @@ export default function LoginPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium text-zinc-300">Password</label>
-                <Link href="#" className="text-xs text-[#007bff] hover:text-[#007bff]/80 transition-colors">
+                <Link href="#" className="text-xs text-[#ff007f] hover:text-[#ff007f]/80 transition-colors">
                   Forgot password?
                 </Link>
               </div>
@@ -91,7 +91,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full bg-[#0c0c0c]/60 border border-white/5 rounded-xl py-3 pl-11 pr-4 text-white focus:ring-2 focus:ring-[#007bff]/30 focus:border-[#007bff] outline-none transition-all"
+                  className="w-full bg-[#0c0c0c]/60 border border-white/5 rounded-xl py-3 pl-11 pr-4 text-white focus:ring-2 focus:ring-[#ff007f]/30 focus:border-[#ff007f] outline-none transition-all"
                   placeholder="••••••••"
                 />
               </div>
@@ -111,7 +111,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#007bff] hover:bg-[#007bff]/95 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed btn-hover shadow-[0_0_20px_rgba(0,123,255,0.4)]"
+              className="w-full bg-primary hover:bg-[#ff007f]/95 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed btn-hover shadow-[0_0_20px_rgba(255,0,127,0.4)]"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -124,7 +124,7 @@ export default function LoginPage() {
           <div className="mt-8 pt-6 border-t border-white/5 text-center">
             <p className="text-zinc-400 text-sm">
               Don't have an account?{' '}
-              <Link href="/signup" className="text-[#007bff] font-semibold hover:text-[#007bff]/80 transition-colors">
+              <Link href="/signup" className="text-[#ff007f] font-semibold hover:text-[#ff007f]/80 transition-colors">
                 Create Account
               </Link>
             </p>

@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #09090b;
+  --background: #040406;
   --foreground: #f4f4f5;
   
-  /* Space/Neon Corporate Theme Colors */
-  --color-primary: #007bff; /* Electric Blue */
-  --color-secondary: #8b5cf6; /* Purple glow */
+  /* Pink Energy / Cyberpunk Theme Colors */
+  --color-primary: #ff007f; /* Hot Pink Energy */
+  --color-secondary: #a855f7; /* Electric Violet Glow */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-critical: #ef4444;
-  --color-card-bg: rgba(15, 15, 20, 0.45);
-  --color-card-border: rgba(255, 255, 255, 0.08);
+  --color-card-bg: rgba(10, 10, 15, 0.5);
+  --color-card-border: rgba(255, 255, 255, 0.06);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-space-grotesk);
   
   --color-primary: var(--color-primary);
   --color-secondary: var(--color-secondary);
@@ -39,19 +39,19 @@ body {
 
 /* Premium Apple-style Glassmorphism utility */
 @utility glass {
-  background: rgba(15, 15, 20, 0.45);
+  background: rgba(10, 10, 15, 0.45);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
   transition: border 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @utility glass-hover {
   &:hover {
-    background: rgba(20, 20, 30, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 12px 40px 0 rgba(0, 123, 255, 0.08);
+    background: rgba(15, 10, 20, 0.55);
+    border: 1px solid rgba(255, 0, 127, 0.15);
+    box-shadow: 0 12px 40px 0 rgba(255, 0, 127, 0.08);
   }
 }
 
@@ -60,7 +60,7 @@ body {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   &:hover {
     transform: translateY(-1.5px);
-    box-shadow: 0 0 20px rgba(0, 123, 255, 0.45);
+    box-shadow: 0 0 20px rgba(255, 0, 127, 0.45);
   }
   &:active {
     transform: translateY(0);
@@ -74,11 +74,11 @@ body {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0, 123, 255, 0.2);
+  background: rgba(255, 0, 127, 0.2);
   border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 123, 255, 0.45);
+  background: rgba(255, 0, 127, 0.45);
 }
 
 @layer utilities {
@@ -89,10 +89,10 @@ body {
 
 @keyframes glow {
   0% {
-    box-shadow: 0 0 10px rgba(0, 123, 255, 0.15), 0 0 20px rgba(139, 92, 246, 0.15);
+    box-shadow: 0 0 10px rgba(255, 0, 127, 0.15), 0 0 20px rgba(168, 85, 247, 0.15);
   }
   100% {
-    box-shadow: 0 0 22px rgba(0, 123, 255, 0.4), 0 0 35px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 22px rgba(255, 0, 127, 0.4), 0 0 35px rgba(168, 85, 247, 0.3);
   }
 }
 

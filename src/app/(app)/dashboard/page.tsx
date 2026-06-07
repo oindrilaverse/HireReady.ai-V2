@@ -72,20 +72,20 @@ export default function DashboardPage() {
       className="space-y-8"
     >
       <header className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Welcome back, <span className="text-[#007bff]">{user?.user_metadata?.full_name?.split(' ')[0] || 'User'}</span></h1>
+        <h1 className="text-3xl font-bold text-white mb-2 font-display">Welcome back, <span className="text-primary">{user?.user_metadata?.full_name?.split(' ')[0] || 'User'}</span></h1>
         <p className="text-zinc-400">Here's an overview of your resume optimization journey.</p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Quick Actions */}
         <div className="glass glass-hover p-6 rounded-2xl flex flex-col items-start relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#007bff]/5 rounded-full blur-2xl group-hover:bg-[#007bff]/10 transition-all duration-300"></div>
-          <div className="w-12 h-12 rounded-xl bg-[#007bff]/15 flex items-center justify-center mb-4 text-[#007bff] relative z-10">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all duration-300"></div>
+          <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center mb-4 text-primary relative z-10">
             <FileText className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-1 relative z-10">Resume Analyzer</h3>
+          <h3 className="text-lg font-semibold text-white mb-1 relative z-10 font-display">Resume Analyzer</h3>
           <p className="text-sm text-zinc-400 mb-4 flex-1 relative z-10">Get instant AI-driven feedback to optimize for ATS systems.</p>
-          <Link href="/analyzer" className="text-[#007bff] font-medium text-sm flex items-center hover:text-[#007bff]/85 relative z-10 transition-colors">
+          <Link href="/analyzer" className="text-primary font-medium text-sm flex items-center hover:text-[#ff007f]/85 relative z-10 transition-colors">
             Start Analysis &rarr;
           </Link>
         </div>
@@ -95,7 +95,7 @@ export default function DashboardPage() {
           <div className="w-12 h-12 rounded-xl bg-purple-500/15 flex items-center justify-center mb-4 text-purple-400 relative z-10">
             <Target className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-1 relative z-10">Job Matcher</h3>
+          <h3 className="text-lg font-semibold text-white mb-1 relative z-10 font-display">Job Matcher</h3>
           <p className="text-sm text-zinc-400 mb-4 flex-1 relative z-10">Paste a JD and instantly see how well you match the role.</p>
           <Link href="/job-match" className="text-purple-400 font-medium text-sm flex items-center hover:text-purple-300 relative z-10 transition-colors">
             Find Matches &rarr;
@@ -104,10 +104,10 @@ export default function DashboardPage() {
 
         {/* Stats Card */}
         <div className="glass p-6 rounded-2xl flex flex-col items-start relative overflow-hidden">
-          <div className="w-12 h-12 rounded-xl bg-[#007bff]/10 flex items-center justify-center mb-4 text-[#007bff]">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 text-primary">
             <BarChart2 className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-1">Your Stats</h3>
+          <h3 className="text-lg font-semibold text-white mb-1 font-display">Your Stats</h3>
           <div className="mt-2 space-y-2 w-full">
             <div className="flex justify-between items-center text-sm">
               <span className="text-zinc-400">Resumes Analyzed</span>
@@ -122,11 +122,11 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-12">
-        <h2 className="text-xl font-bold text-white mb-6">Recent History</h2>
+        <h2 className="text-xl font-bold text-white mb-6 font-display">Recent History</h2>
         {resumes.length === 0 ? (
           <div className="text-center py-12 glass rounded-2xl">
             <p className="text-zinc-400">No resumes analyzed yet. Start your first analysis!</p>
-            <Link href="/analyzer" className="mt-4 inline-block px-5 py-2.5 bg-[#007bff] text-white font-medium rounded-lg hover:bg-[#007bff]/90 btn-hover">
+            <Link href="/analyzer" className="mt-4 inline-block px-5 py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-[#ff007f]/90 btn-hover">
               Analyze Resume
             </Link>
           </div>

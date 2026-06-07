@@ -64,7 +64,7 @@ const trust = [
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-[#09090b] text-white selection:bg-primary/30">
+    <div className="min-h-screen bg-[#040406] text-white selection:bg-primary/30">
 
       {/* Background glow */}
       <div
@@ -72,7 +72,7 @@ export default function PricingPage() {
         className="pointer-events-none fixed inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(ellipse 80% 40% at 50% -10%, rgba(0,123,255,0.12) 0%, transparent 70%)",
+            "radial-gradient(ellipse 80% 40% at 50% -10%, rgba(255,0,127,0.12) 0%, transparent 70%)",
         }}
       />
 
@@ -83,9 +83,9 @@ export default function PricingPage() {
           <span className="inline-block text-xs font-bold tracking-widest uppercase text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-full">
             Pricing
           </span>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight font-display">
             Simple pricing,{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#007bff] to-[#8b5cf6]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff007f] to-[#a855f7]">
               no surprises
             </span>
           </h1>
@@ -106,13 +106,13 @@ export default function PricingPage() {
               className={[
                 "relative rounded-3xl p-8 flex flex-col gap-8 transition-all duration-300",
                 plan.highlight
-                  ? "bg-[rgba(15,15,22,0.7)] border-2 border-primary/50 shadow-[0_0_60px_rgba(0,123,255,0.12)] backdrop-blur-xl"
-                  : "bg-[rgba(15,15,22,0.45)] border border-white/8 backdrop-blur-md",
+                  ? "bg-[rgba(10,10,15,0.7)] border-2 border-primary/50 shadow-[0_0_60px_rgba(255,0,127,0.12)] backdrop-blur-xl"
+                  : "bg-[rgba(10,10,15,0.45)] border border-white/8 backdrop-blur-md",
               ].join(" ")}
             >
               {/* Popular badge */}
               {plan.highlight && (
-                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary text-white text-[11px] font-bold tracking-widest uppercase px-4 py-1 rounded-full shadow-[0_0_20px_rgba(0,123,255,0.5)]">
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary text-white text-[11px] font-bold tracking-widest uppercase px-4 py-1 rounded-full shadow-[0_0_20px_rgba(255,0,127,0.5)]">
                   {plan.badge}
                 </span>
               )}
@@ -137,7 +137,7 @@ export default function PricingPage() {
                 className={[
                   "block text-center font-bold py-3.5 px-6 rounded-xl text-sm transition-all duration-200",
                   plan.highlight
-                    ? "bg-primary hover:bg-blue-500 text-white shadow-[0_0_25px_rgba(0,123,255,0.4)] hover:shadow-[0_0_35px_rgba(0,123,255,0.6)] hover:-translate-y-0.5"
+                    ? "bg-primary hover:bg-[#ff007f]/90 text-white shadow-[0_0_25px_rgba(255,0,127,0.4)] hover:shadow-[0_0_35px_rgba(255,0,127,0.6)] hover:-translate-y-0.5"
                     : "bg-white/8 hover:bg-white/12 text-white border border-white/10 hover:border-white/20",
                 ].join(" ")}
               >
@@ -188,7 +188,7 @@ export default function PricingPage() {
 
         {/* ── FAQ teaser ───────────────────────────────────────────────── */}
         <section className="max-w-2xl mx-auto space-y-4">
-          <h2 className="text-xl font-bold text-white text-center mb-6">
+          <h2 className="text-xl font-bold text-white text-center mb-6 font-display">
             Common questions
           </h2>
 
