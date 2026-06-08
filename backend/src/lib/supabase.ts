@@ -50,8 +50,9 @@ function writeLocalDB(data: any) {
 
 class MockQueryBuilder {
   private table: string;
-  private operation: 'select' | 'insert' | 'update' | 'delete';
+  private operation: 'select' | 'insert' | 'update' | 'delete' | 'upsert';
   private data: any = null;
+  private upsertConflict: string = 'id';
   private filters: { col: string; val: any; op: 'eq' | 'in' }[] = [];
   private orderCol: string = '';
   private orderAsc: boolean = true;
@@ -82,6 +83,13 @@ class MockQueryBuilder {
 
   delete() {
     this.operation = 'delete';
+    return this;
+  }
+
+  upsert(data: any, options?: { onConflict?: string; ignoreDuplicates?: boolean }) {
+    this.operation = 'upsert';
+    this.data = data;
+    this.upsertConflict = options?.onConflict || 'id';
     return this;
   }
 
@@ -173,6 +181,48 @@ class MockQueryBuilder {
       return { data: filtered, error: null };
     }
 
+    if (this.operation === 'upsert') {
+      const inputData = Array.isArray(this.data) ? this.data : [this.data];
+      const returnedRows: any[] = [];
+
+      for (const item of inputData) {
+        const conflictKey = this.upsertConflict === 'auth_id' || this.upsertConflict === 'authId' ? 'auth_id' : this.upsertConflict;
+        const conflictVal = item[conflictKey] || item['authId'] || item['auth_id'];
+        
+        const existingIdx = rows.findIndex((row: any) => {
+          const rowVal = row[conflictKey] || row['auth_id'] || row['authId'];
+          return rowVal && String(rowVal) === String(conflictVal);
+        });
+
+        if (existingIdx !== -1) {
+          const updatedRow = {
+            ...rows[existingIdx],
+            ...item,
+            updatedAt: new Date().toISOString()
+          };
+          rows[existingIdx] = updatedRow;
+          returnedRows.push(updatedRow);
+        } else {
+          const newRow = {
+            id: item.id || crypto.randomUUID() || Math.random().toString(36).substring(2, 11),
+            createdAt: item.createdAt || new Date().toISOString(),
+            ...item,
+          };
+          rows.push(newRow);
+          returnedRows.push(newRow);
+        }
+      }
+
+      db[this.table] = rows;
+      writeLocalDB(db);
+
+      let returned = Array.isArray(this.data) ? returnedRows : returnedRows[0];
+      if (isSingle || isMaybeSingle) {
+        returned = Array.isArray(returned) ? (returned[0] || null) : returned;
+      }
+      return { data: returned, error: null };
+    }
+
     if (this.operation === 'insert') {
       const inputData = Array.isArray(this.data) ? this.data : [this.data];
       const insertedRows: any[] = [];
@@ -242,6 +292,7 @@ class QueryBuilderWrapper {
   insert(...args: any[]) { this.chain.push({ method: 'insert', args }); return this; }
   update(...args: any[]) { this.chain.push({ method: 'update', args }); return this; }
   delete(...args: any[]) { this.chain.push({ method: 'delete', args }); return this; }
+  upsert(...args: any[]) { this.chain.push({ method: 'upsert', args }); return this; }
   eq(...args: any[]) { this.chain.push({ method: 'eq', args }); return this; }
   in(...args: any[]) { this.chain.push({ method: 'in', args }); return this; }
   order(...args: any[]) { this.chain.push({ method: 'order', args }); return this; }
