@@ -9,8 +9,14 @@ import { getApiUrl } from "@/lib/utils";
 let globalSyncInProgress = false;
 
 export function useAuthSync() {
-  const { isSynced, syncedUserId, setSynced, clearStore } = useCareerStore();
-  const [user, setUser] = useState<any>(null);
+  const { 
+    isSynced, 
+    syncedUserId, 
+    setSynced, 
+    clearStore, 
+    user, 
+    setUser 
+  } = useCareerStore();
   const [hydrated, setHydrated] = useState(false);
   const supabaseRef = useRef<any>(null);
 
@@ -31,15 +37,26 @@ export function useAuthSync() {
   useEffect(() => {
     if (!hydrated) return;
 
-    async function checkUser() {
-      const { data: { session } } = await supabase.auth.getSession();
+    let active = true;
+
+    // Seed Zustand user synchronously from local cache on mount if empty to avoid blank screen
+    if (!useCareerStore.getState().user) {
+      const cached = supabase.auth.getSessionOffline?.();
+      if (cached && cached.user) {
+        setUser(cached.user);
+      }
+    }
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
+      if (!active) return;
       const sessionUser = session?.user || null;
       
       if (sessionUser) {
         setUser(sessionUser);
         
-        // Sync if not synced yet, or if logged in as a different user
-        const needsSync = !isSynced || syncedUserId !== sessionUser.id;
+        // Read latest state values to determine if synchronization is necessary
+        const currentStore = useCareerStore.getState();
+        const needsSync = !currentStore.isSynced || currentStore.syncedUserId !== sessionUser.id;
         
         if (needsSync && !globalSyncInProgress) {
           globalSyncInProgress = true;
@@ -54,7 +71,7 @@ export function useAuthSync() {
               }),
             });
 
-            if (syncRes.ok) {
+            if (syncRes.ok && active) {
               setSynced(true, sessionUser.id);
             }
           } catch (err) {
@@ -65,31 +82,17 @@ export function useAuthSync() {
         }
       } else {
         setUser(null);
-        if (isSynced) {
-          clearStore();
-        }
-      }
-    }
-
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
-      const sessionUser = session?.user || null;
-      if (sessionUser) {
-        setUser(sessionUser);
-        checkUser();
-      } else {
-        setUser(null);
-        if (isSynced) {
+        if (useCareerStore.getState().isSynced) {
           clearStore();
         }
       }
     });
 
     return () => {
+      active = false;
       subscription.unsubscribe();
     };
-  }, [hydrated, isSynced, syncedUserId]);
+  }, [hydrated]);
 
-  return { user, isSynced: hydrated && isSynced };
+  return { user: hydrated ? user : null, isSynced: hydrated && isSynced };
 }

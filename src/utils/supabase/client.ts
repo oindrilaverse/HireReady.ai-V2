@@ -117,10 +117,17 @@ export function createClient() {
   // Wrap the auth methods with a transparent fallback for offline development/testing
   const wrappedAuth = new Proxy(originalAuth, {
     get(target: any, prop: string | symbol, receiver: any) {
+      if (prop === 'getSessionOffline') {
+        return getSessionOffline;
+      }
       if (prop === 'signUp') {
         return async function signUp(params: any): Promise<any> {
+          const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+          if (isOffline) {
+            return handleSignUpFallback(params);
+          }
           const timeoutPromise = new Promise((resolve) => 
-            setTimeout(() => resolve({ error: { message: 'Timeout' } }), 1000)
+            setTimeout(() => resolve({ error: { message: 'Timeout' } }), 8000)
           );
           try {
             const res = await Promise.race([target.signUp(params), timeoutPromise]) as any;
@@ -135,8 +142,12 @@ export function createClient() {
       }
       if (prop === 'signInWithPassword') {
         return async function signInWithPassword(params: any): Promise<any> {
+          const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+          if (isOffline) {
+            return handleSignInFallback(params);
+          }
           const timeoutPromise = new Promise((resolve) => 
-            setTimeout(() => resolve({ error: { message: 'Timeout' } }), 1000)
+            setTimeout(() => resolve({ error: { message: 'Timeout' } }), 8000)
           );
           try {
             const res = await Promise.race([target.signInWithPassword(params), timeoutPromise]) as any;
@@ -168,8 +179,12 @@ export function createClient() {
           if (session) {
             return { data: { session }, error: null };
           }
+          const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+          if (isOffline) {
+            return { data: { session: null }, error: null };
+          }
           const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Timeout')), 1000)
+            setTimeout(() => reject(new Error('Timeout')), 5000)
           );
           try {
             const res = await Promise.race([target.getSession(), timeoutPromise]) as any;
