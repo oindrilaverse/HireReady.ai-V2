@@ -51,16 +51,16 @@ HireReady.AI acts as a simulated senior recruiter and ATS evaluator. Users uploa
 ## 📸 Screenshots
 
 ### 1. Landing Page (Cinematic Video Background & Pink Energy Aesthetic)
-*`[Insert Landing Page Screenshot / Placeholder]`*
+![Landing Page](public/landing_screenshot.png)
 
 ### 2. Recruiter Analytics Dashboard
-*`[Insert Dashboard Screenshot / Placeholder]`*
+![Recruiter Analytics Dashboard](public/dashboard_screenshot.png)
 
 ### 3. Detailed ATS Analysis & Keyword Gap Report
-*`[Insert Analyzer Results Screenshot / Placeholder]`*
+![Detailed ATS Analysis & Keyword Gap Report](public/analyzer_screenshot.png)
 
 ### 4. Interactive Job Matcher Page
-*`[Insert Job Matcher Screenshot / Placeholder]`*
+![Interactive Job Matcher Page](public/job_matcher_screenshot.png)
 
 ---
 
