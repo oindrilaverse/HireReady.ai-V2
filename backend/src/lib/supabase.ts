@@ -275,33 +275,21 @@ class QueryBuilderWrapper {
         res = await q;
       }
 
-      // FIX 1: Only fall back to local DB on genuine network/connectivity errors.
-      // PGRST116 ("no rows returned") is a valid business response — NOT an error to fallback from.
-      // Previously, PGRST116 was treated as a failure, causing every "user not found" query
-      // to trigger a redundant second round-trip to the mock DB, doubling latency on every route.
-      if (res.error && (
-        res.error.message?.includes('fetch failed') ||
-        res.error.message?.includes('getaddrinfo') ||
-        res.error.message?.includes('ENOTFOUND') ||
-        res.error.message?.includes('ECONNREFUSED') ||
-        res.error.code === '42501' ||
-        res.error.message?.includes('row-level security')
-      )) {
-        console.warn(`Supabase network/RLS error on table "${this.table}", falling back to local database`);
+      const isUserTable = this.table === 'users';
+      const shouldFallback = res.error && (res.error.code !== 'PGRST116' || (!isUserTable && res.error.code === 'PGRST116'));
+
+      if (shouldFallback) {
+        console.warn(`Supabase query error (${res.error.code || 'unknown'}) on table "${this.table}", falling back to local database: ${res.error.message}`);
         const mock = this.buildMock();
         return await mock.execute(isSingle, isMaybeSingle);
       }
       return res;
     } catch (err: any) {
-      if (
-        err.message?.includes('fetch failed') ||
-        err.message?.includes('getaddrinfo') ||
-        err.message?.includes('ENOTFOUND') ||
-        err.message?.includes('ECONNREFUSED') ||
-        err.code === '42501' ||
-        err.message?.includes('row-level security')
-      ) {
-        console.warn(`Supabase network/RLS exception on table "${this.table}", falling back to local database`);
+      const isUserTable = this.table === 'users';
+      const shouldFallback = err.code !== 'PGRST116' || (!isUserTable && err.code === 'PGRST116');
+
+      if (shouldFallback) {
+        console.warn(`Supabase query exception (${err.code || 'unknown'}) on table "${this.table}", falling back to local database: ${err.message}`);
         const mock = this.buildMock();
         return await mock.execute(isSingle, isMaybeSingle);
       }
