@@ -274,30 +274,34 @@ class QueryBuilderWrapper {
       } else {
         res = await q;
       }
-      
+
+      // FIX 1: Only fall back to local DB on genuine network/connectivity errors.
+      // PGRST116 ("no rows returned") is a valid business response — NOT an error to fallback from.
+      // Previously, PGRST116 was treated as a failure, causing every "user not found" query
+      // to trigger a redundant second round-trip to the mock DB, doubling latency on every route.
       if (res.error && (
-        res.error.message?.includes('fetch') || 
-        res.error.message?.includes('getaddrinfo') || 
+        res.error.message?.includes('fetch failed') ||
+        res.error.message?.includes('getaddrinfo') ||
         res.error.message?.includes('ENOTFOUND') ||
+        res.error.message?.includes('ECONNREFUSED') ||
         res.error.code === '42501' ||
-        res.error.code === 'PGRST116' ||
         res.error.message?.includes('row-level security')
       )) {
-        console.warn(`Supabase database error/RLS/no-rows/offline detected on table "${this.table}", falling back to local database`);
+        console.warn(`Supabase network/RLS error on table "${this.table}", falling back to local database`);
         const mock = this.buildMock();
         return await mock.execute(isSingle, isMaybeSingle);
       }
       return res;
     } catch (err: any) {
       if (
-        err.message?.includes('fetch') || 
-        err.message?.includes('getaddrinfo') || 
+        err.message?.includes('fetch failed') ||
+        err.message?.includes('getaddrinfo') ||
         err.message?.includes('ENOTFOUND') ||
+        err.message?.includes('ECONNREFUSED') ||
         err.code === '42501' ||
-        err.code === 'PGRST116' ||
         err.message?.includes('row-level security')
       ) {
-        console.warn(`Supabase database exception/RLS/no-rows/offline detected on table "${this.table}", falling back to local database`);
+        console.warn(`Supabase network/RLS exception on table "${this.table}", falling back to local database`);
         const mock = this.buildMock();
         return await mock.execute(isSingle, isMaybeSingle);
       }

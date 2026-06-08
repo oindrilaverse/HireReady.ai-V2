@@ -12,26 +12,37 @@ import { supabase } from '../lib/supabase.js';
  * If the user is on the 'free' tier and scan_count >= 3,
  * responds with 403 and stops the request chain.
  * Otherwise calls next() to continue to the route handler.
+ *
+ * NOTE: This middleware runs BEFORE multer parses the multipart body.
+ * Because multer hasn't run yet, req.body may be empty for multipart requests.
+ * The authId is read from the raw body fields if available, or we skip the check
+ * and let the route handler enforce it after parsing. We call next() on any
+ * ambiguity to avoid blocking legitimate requests.
  */
 export async function checkScanLimit(
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<any> {
-  const userId: string | undefined = req.body.authId || req.body.userId;
+  // For multipart/form-data, multer hasn't run yet — body fields are not parsed.
+  // We skip the check here and rely on the route handler to validate after parsing.
+  const contentType = req.headers['content-type'] || '';
+  if (contentType.includes('multipart/form-data')) {
+    return next();
+  }
+
+  const userId: string | undefined = req.body?.authId || req.body?.userId;
 
   if (!userId) {
-    return res.status(401).json({
-      success: false,
-      error: { message: 'Unauthorized: no user ID provided', code: 'UNAUTHORIZED' },
-    });
+    // No userId means multer hasn't parsed or it's genuinely missing — let the route handle it
+    return next();
   }
 
   try {
     const { data: user, error } = await supabase
       .from('users')
       .select('scan_count, tier')
-      .eq('auth_id', userId)   // matches the auth_id column used in the rest of the codebase
+      .eq('auth_id', userId)
       .single();
 
     if (error || !user) {

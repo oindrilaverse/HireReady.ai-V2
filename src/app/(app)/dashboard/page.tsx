@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { FileText, Target, Clock, Activity, BarChart2 } from "lucide-react";
 import Link from "next/link";
 import { useCareerStore } from "@/store/careerStore";
@@ -17,18 +17,26 @@ export default function DashboardPage() {
   const isCorrectUser = dashboardData && user && (dashboardData.auth_id === user.id || dashboardData.id === user.id);
   const displayData = isCorrectUser ? dashboardData : null;
   
-  // Only show loading state if we don't have valid cached data
+  // FIX 4: Only show loading state if we don't have valid cached data.
+  // Show skeleton immediately — never block on a blank screen.
   const [loading, setLoading] = useState(!displayData);
+  const fetchedRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // FIX 4: Fire dashboard fetch as soon as we have user.id — do NOT wait for isSynced.
+    // Previously: waited for POST /users/sync to complete (~7-8s) before even starting dashboard fetch.
+    // Now: dashboard fetch fires the moment user.id is available from local session cache.
+    // The sync completes in the background without blocking the data fetch.
+    // The backend's /dashboard endpoint only needs auth_id which we have immediately.
+    if (!user?.id) return;
+    
+    // Prevent duplicate fetches for the same user
+    if (fetchedRef.current === user.id) return;
+    fetchedRef.current = user.id;
+
     async function fetchDashboard() {
-      // Don't fetch until user is loaded and synced with backend to prevent 404 race conditions
-      if (!user || !isSynced) {
-        return;
-      }
-      
       try {
-        const res = await fetch(`${API_URL}/users/${user.id}/dashboard`);
+        const res = await fetch(`${API_URL}/users/${user!.id}/dashboard`);
         if (res.ok) {
           const envelope = await res.json();
           if (envelope.success && envelope.data) {
@@ -44,19 +52,15 @@ export default function DashboardPage() {
       }
     }
 
-    if (user && isSynced) {
-      fetchDashboard();
-    }
-  }, [user?.id, isSynced, setDashboardData]);
+    fetchDashboard();
+  }, [user?.id, setDashboardData]);
 
-  // Adjust loading state if sync/user details change
+  // Clear loading when displayData becomes available (e.g. from cache)
   useEffect(() => {
     if (displayData) {
       setLoading(false);
-    } else if (user && isSynced) {
-      setLoading(true);
     }
-  }, [displayData, user, isSynced]);
+  }, [displayData]);
 
   if (loading && !displayData) {
     return (
@@ -121,59 +125,120 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* Stats Card */}
-        <div className="glass p-6 rounded-2xl flex flex-col items-start relative overflow-hidden">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 text-primary">
+        <div className="glass glass-hover p-6 rounded-2xl flex flex-col items-start relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-300"></div>
+          <div className="w-12 h-12 rounded-xl bg-blue-500/15 flex items-center justify-center mb-4 text-blue-400 relative z-10">
             <BarChart2 className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-1 font-display">Your Stats</h3>
-          <div className="mt-2 space-y-2 w-full">
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-zinc-400">Resumes Analyzed</span>
-              <span className="text-white font-bold">{totalAnalyzed}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-zinc-400">Avg ATS Score</span>
-              <span className="text-white font-bold">{latestReport?.score ? `${latestReport.score}%` : 'N/A'}</span>
-            </div>
-          </div>
+          <h3 className="text-lg font-semibold text-white mb-1 relative z-10 font-display">Analytics</h3>
+          <p className="text-sm text-zinc-400 mb-4 flex-1 relative z-10">Track your ATS scores and resume performance over time.</p>
+          <Link href="/analytics" className="text-blue-400 font-medium text-sm flex items-center hover:text-blue-300 relative z-10 transition-colors">
+            View Analytics &rarr;
+          </Link>
         </div>
       </div>
 
-      <div className="mt-12">
-        <h2 className="text-xl font-bold text-white mb-6 font-display">Recent History</h2>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="glass p-6 rounded-2xl">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+              <FileText className="w-4 h-4 text-primary" />
+            </div>
+            <span className="text-sm text-zinc-400 font-medium">Total Scans</span>
+          </div>
+          <p className="text-3xl font-bold text-white font-display">{totalAnalyzed}</p>
+          <p className="text-xs text-zinc-500 mt-1">Resumes analyzed</p>
+        </div>
+
+        <div className="glass p-6 rounded-2xl">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+              <Activity className="w-4 h-4 text-emerald-400" />
+            </div>
+            <span className="text-sm text-zinc-400 font-medium">Latest ATS Score</span>
+          </div>
+          <p className="text-3xl font-bold text-white font-display">
+            {latestReport?.score != null ? `${latestReport.score}` : '—'}
+          </p>
+          <p className="text-xs text-zinc-500 mt-1">{latestReport ? 'out of 100' : 'No analysis yet'}</p>
+        </div>
+
+        <div className="glass p-6 rounded-2xl">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center">
+              <Clock className="w-4 h-4 text-purple-400" />
+            </div>
+            <span className="text-sm text-zinc-400 font-medium">Last Activity</span>
+          </div>
+          <p className="text-3xl font-bold text-white font-display">
+            {latestResume?.createdAt
+              ? new Date(latestResume.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+              : '—'}
+          </p>
+          <p className="text-xs text-zinc-500 mt-1">{latestResume ? 'Last resume upload' : 'No activity yet'}</p>
+        </div>
+      </div>
+
+      {/* Recent Scans */}
+      <div className="mt-4">
+        <h2 className="text-xl font-semibold text-white mb-4 font-display">Recent Scans</h2>
         {resumes.length === 0 ? (
-          <div className="text-center py-12 glass rounded-2xl">
-            <p className="text-zinc-400">No resumes analyzed yet. Start your first analysis!</p>
-            <Link href="/analyzer" className="mt-4 inline-block px-5 py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-[#ff007f]/90 btn-hover">
+          <div className="glass rounded-2xl p-10 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-8 h-8 text-primary/60" />
+            </div>
+            <p className="text-zinc-400 text-lg font-medium mb-2">No resumes analyzed yet</p>
+            <p className="text-zinc-500 text-sm mb-6">Upload your resume to get started with AI-powered ATS optimization.</p>
+            <Link
+              href="/analyzer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/85 transition-colors"
+            >
               Analyze Resume
             </Link>
           </div>
         ) : (
-          <div className="glass rounded-2xl overflow-hidden">
-            <div className="divide-y divide-white/5">
-              {resumes.map((resume: any) => {
-                const report = resume.analyses?.[0];
-                return (
-                  <div key={resume.id} className="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
-                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-zinc-400">
-                      <Clock className="w-5 h-5" />
+          <div className="space-y-3">
+            {resumes.slice(0, 5).map((resume: any) => {
+              const report = resume.analyses?.[0];
+              const score = report?.score;
+              const scoreColor = score != null
+                ? score >= 80 ? 'text-emerald-400'
+                : score >= 60 ? 'text-amber-400'
+                : 'text-red-400'
+                : 'text-zinc-500';
+              return (
+                <div key={resume.id} className="glass glass-hover p-4 rounded-xl flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-5 h-5 text-primary/70" />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-white">{resume.originalName || 'Uploaded Resume'}</p>
-                      <p className="text-xs text-zinc-500">{new Date(resume.createdAt).toLocaleDateString()}</p>
+                    <div className="min-w-0">
+                      <p className="text-white font-medium text-sm truncate">{resume.originalName || 'Resume'}</p>
+                      <p className="text-zinc-500 text-xs">
+                        {new Date(resume.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric', month: 'short', day: 'numeric'
+                        })}
+                      </p>
                     </div>
-                    {report && (
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {score != null && (
                       <div className="text-right">
-                        <div className={`text-sm font-bold ${report.score >= 80 ? 'text-[#10b981]' : report.score >= 60 ? 'text-[#f59e0b]' : 'text-[#ef4444]'}`}>
-                          {report.score}% Match
-                        </div>
+                        <p className={`text-lg font-bold font-display ${scoreColor}`}>{score}</p>
+                        <p className="text-xs text-zinc-500">ATS Score</p>
                       </div>
                     )}
+                    <Link
+                      href="/analyzer"
+                      className="text-xs text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      Re-analyze
+                    </Link>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

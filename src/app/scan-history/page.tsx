@@ -6,8 +6,6 @@ import { BarChart2, Clock, FileText, TrendingUp, RefreshCw, LogIn } from "lucide
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { ScanHistoryCard } from "@/components/ScanHistoryCard";
-import { useAuthSync } from "@/hooks/useAuthSync";
-import { useCareerStore } from "@/store/careerStore";
 import dynamic from "next/dynamic";
 
 const ScoreChart = dynamic(
@@ -43,64 +41,54 @@ function Skeleton() {
 }
 
 export default function ScanHistoryPage() {
-  const { user } = useAuthSync();
   const [scans, setScans] = useState<ScanRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("there");
   const [tier, setTier] = useState<string>("free");
   const [scanCount, setScanCount] = useState<number>(0);
-  const [hydrated, setHydrated] = useState(false);
 
   const supabase = createClient();
 
-  useEffect(() => {
-    setHydrated(useCareerStore.persist.hasHydrated());
-    const unsub = useCareerStore.persist.onFinishHydration(() => {
-      setHydrated(true);
-    });
-    return () => unsub();
-  }, []);
-
-  async function loadData(currentUser: any = user) {
-    if (!currentUser) {
-      setError("not_authed");
-      setLoading(false);
-      return;
-    }
+  async function loadData() {
     setLoading(true);
     setError(null);
 
     try {
-      const uid = currentUser.id;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setError("not_authed");
+        setLoading(false);
+        return;
+      }
+
+      const uid = session.user.id;
       setUserName(
-        currentUser.user_metadata?.full_name?.split(" ")[0] ||
-        currentUser.email?.split("@")[0] ||
+        session.user.user_metadata?.full_name?.split(" ")[0] ||
+        session.user.email?.split("@")[0] ||
         "there"
       );
 
-      // Run profile and history queries in parallel
-      const [userRes, historyRes] = await Promise.all([
-        supabase
-          .from("users")
-          .select("tier, scan_count")
-          .eq("auth_id", uid)
-          .maybeSingle(),
-        supabase
-          .from("scan_history")
-          .select("id, user_id, created_at, ats_score, job_title, skills_matched")
-          .eq("user_id", uid)
-          .order("created_at", { ascending: false })
-          .limit(50)
-      ]);
+      const { data: userRow } = await supabase
+        .from("users")
+        .select("tier, scan_count")
+        .eq("auth_id", uid)
+        .maybeSingle();
 
-      if (userRes.data) {
-        setTier(userRes.data.tier ?? "free");
-        setScanCount(userRes.data.scan_count ?? 0);
+      if (userRow) {
+        setTier(userRow.tier ?? "free");
+        setScanCount(userRow.scan_count ?? 0);
       }
 
-      if (historyRes.error) throw historyRes.error;
-      setScans(historyRes.data ?? []);
+      const { data: historyRows, error: histErr } = await supabase
+        .from("scan_history")
+        .select("id, user_id, created_at, ats_score, job_title, skills_matched")
+        .eq("user_id", uid)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (histErr) throw histErr;
+      setScans(historyRows ?? []);
     } catch (err: unknown) {
       console.error("[ScanHistory] load error:", err);
       setError("Failed to load your data. Please try again.");
@@ -110,14 +98,9 @@ export default function ScanHistoryPage() {
   }
 
   useEffect(() => {
-    if (!hydrated) return;
-    if (user) {
-      loadData(user);
-    } else {
-      setError("not_authed");
-      setLoading(false);
-    }
-  }, [user, hydrated]);
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!loading && error === "not_authed") {
     return (

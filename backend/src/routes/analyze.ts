@@ -14,6 +14,13 @@ const __dirname = path.dirname(__filename);
 const require = createRequire(import.meta.url);
 const pdfParseModule = require('pdf-parse');
 
+// FIX 3b: Non-blocking async log writer — no more event loop blocking
+function asyncLog(level: 'INFO' | 'WARN' | 'ERROR', msg: string) {
+  const line = `${new Date().toISOString()} | ${level} | ${msg}\n`;
+  fs.appendFile(path.join(__dirname, '../../debug.log'), line, (err) => {
+    if (err) console.warn('[logger] Failed to write log:', err.message);
+  });
+}
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -22,9 +29,9 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 router.post('/upload', checkScanLimit, (req, res, next) => {
-  const msg = `[ANALYZER] Incoming POST to /api/analyze/upload | Content-Type: ${req.headers['content-type']}\n`;
-  console.log(msg.trim());
-  fs.appendFileSync(path.join(__dirname, '../../debug.log'), `${new Date().toISOString()} | INFO | ${msg}`);
+  const msg = `[ANALYZER] Incoming POST to /api/analyze/upload | Content-Type: ${req.headers['content-type']}`;
+  console.log(msg);
+  asyncLog('INFO', msg);
   next();
 }, upload.single('file'), async (req, res): Promise<any> => {
   try {
@@ -44,7 +51,6 @@ router.post('/upload', checkScanLimit, (req, res, next) => {
     }
 
     const supportedTypes = ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    // Issue A fix: check BOTH mimetype AND filename extension — browsers send inconsistent mimetypes
     const isPdfByMime = file.mimetype === 'application/pdf';
     const isPdfByName = file.originalname.toLowerCase().endsWith('.pdf');
     const isPdf = isPdfByMime || isPdfByName;
@@ -54,52 +60,62 @@ router.post('/upload', checkScanLimit, (req, res, next) => {
       return res.status(400).json({ error: 'Unsupported file type. Please upload a PDF, DOCX, or TXT file.' });
     }
 
-    console.log(`[ANALYZER] Parsing file: ${file.originalname}, mimetype: ${file.mimetype}, size: ${file.buffer?.length || 0}`);
-    let text = '';
+    // FIX 5: Start user lookup in parallel with PDF parsing.
+    // Previously: parse PDF first (sequential), then look up user, then check for duplicate resume.
+    // Now: PDF parsing and user lookup fire simultaneously via Promise.all — saves one full round trip wait.
+    console.log(`[ANALYZER] Parsing file & fetching user in parallel: ${file.originalname}`);
 
-    if (isText) {
-      // Plain text file - read directly
-      text = file.buffer.toString('utf-8');
-      console.log(`[ANALYZER] Text file extracted directly. Length: ${text.length}`);
-    } else if (isPdf) {
-      // PDF parsing
-      try {
-        const parseResult = await pdfParseModule(file.buffer);
-        text = parseResult.text || '';
-        console.log(`[ANALYZER] PDF parsed successfully. Length: ${text.length}`);
-      } catch (pdfError) {
-        const errorMsg = `[ANALYZER] PDF Parse Error: ${pdfError instanceof Error ? pdfError.message : String(pdfError)}. Attempting AI fallback.\n`;
-        fs.appendFileSync(path.join(__dirname, '../../debug.log'), `${new Date().toISOString()} | WARN | ${errorMsg}`);
-        console.warn(errorMsg);
+    const parsePromise: Promise<string> = (async () => {
+      if (isText) {
+        return file.buffer.toString('utf-8');
+      } else if (isPdf) {
+        try {
+          const parseResult = await pdfParseModule(file.buffer);
+          const text = parseResult.text || '';
+          console.log(`[ANALYZER] PDF parsed successfully. Length: ${text.length}`);
+          return text;
+        } catch (pdfError) {
+          asyncLog('WARN', `[ANALYZER] PDF Parse Error: ${pdfError instanceof Error ? pdfError.message : String(pdfError)}. Attempting AI fallback.`);
+          try {
+            const fallbackResult = await model.generateContent([
+              { inlineData: { data: file.buffer.toString('base64'), mimeType: 'application/pdf' } },
+              { text: 'Extract and return ALL text from this resume document exactly as it appears. No formatting, no commentary. Just the raw text.' }
+            ]);
+            const text = fallbackResult.response.text();
+            console.log(`[ANALYZER] Gemini PDF fallback successful. Length: ${text.length}`);
+            return text;
+          } catch (geminiError) {
+            console.error('[ANALYZER] Gemini PDF fallback failed:', geminiError);
+            return 'Unable to extract readable text from this PDF. Please try uploading a plain text (.txt) version.';
+          }
+        }
+      } else {
+        // DOCX or other — use Gemini to extract text
         try {
           const fallbackResult = await model.generateContent([
-            { inlineData: { data: file.buffer.toString('base64'), mimeType: 'application/pdf' } },
+            { inlineData: { data: file.buffer.toString('base64'), mimeType: file.mimetype } },
             { text: 'Extract and return ALL text from this resume document exactly as it appears. No formatting, no commentary. Just the raw text.' }
           ]);
-          text = fallbackResult.response.text();
-          console.log(`[ANALYZER] Gemini PDF fallback successful. Length: ${text.length}`);
+          const text = fallbackResult.response.text();
+          console.log(`[ANALYZER] Gemini document extraction successful. Length: ${text.length}`);
+          return text;
         } catch (geminiError) {
-          console.error('[ANALYZER] Gemini PDF fallback failed:', geminiError);
-          text = 'Unable to extract readable text from this PDF. Please try uploading a plain text (.txt) version.';
+          console.error('[ANALYZER] Gemini document extraction failed:', geminiError);
+          return 'Unable to extract text from this document. Please upload a PDF or TXT version of your resume.';
         }
       }
-    } else {
-      // DOCX or other - use Gemini to extract text
-      try {
-        const fallbackResult = await model.generateContent([
-          { inlineData: { data: file.buffer.toString('base64'), mimeType: file.mimetype } },
-          { text: 'Extract and return ALL text from this resume document exactly as it appears. No formatting, no commentary. Just the raw text.' }
-        ]);
-        text = fallbackResult.response.text();
-        console.log(`[ANALYZER] Gemini document extraction successful. Length: ${text.length}`);
-      } catch (geminiError) {
-        console.error('[ANALYZER] Gemini document extraction failed:', geminiError);
-        text = 'Unable to extract text from this document. Please upload a PDF or TXT version of your resume.';
-      }
-    }
+    })();
 
-    // Issue B fix: if no text was extracted after all parsing and fallback attempts, return a clear error
-    // Do NOT pass empty/garbage text to the AI — it produces silent failures or nonsense results
+    // FIX 5: User lookup runs in parallel with PDF parsing
+    const userLookupPromise = supabase
+      .from('users')
+      .select('id')
+      .eq('auth_id', authId)
+      .maybeSingle();
+
+    // Wait for both to complete simultaneously
+    const [text, existingUserResult] = await Promise.all([parsePromise, userLookupPromise]);
+
     if (!text || text.trim().length < 20) {
       console.warn('[ANALYZER] Empty or near-empty text extracted from file');
       return res.status(400).json({
@@ -110,19 +126,16 @@ router.post('/upload', checkScanLimit, (req, res, next) => {
 
     const textHash = crypto.createHash('sha256').update(text.trim()).digest('hex');
 
-    // Ensure user exists — upsert if not found
+    // FIX 6: Use upsert for user creation instead of select-then-insert
     let userId: string;
-    const { data: existingUser } = await supabase
-      .from('users')
-      .select('id')
-      .eq('auth_id', authId)
-      .maybeSingle();
-
-    if (!existingUser) {
+    if (!existingUserResult.data) {
       console.log(`[ANALYZER] User not found, auto-creating for authId: ${authId}`);
       const { data: newUser, error: createErr } = await supabase
         .from('users')
-        .insert([{ auth_id: authId, email: userEmail || authId, name: userName || null }])
+        .upsert(
+          [{ auth_id: authId, email: userEmail || authId, name: userName || null }],
+          { onConflict: 'auth_id', ignoreDuplicates: false }
+        )
         .select('id')
         .single();
       if (createErr || !newUser) {
@@ -131,17 +144,16 @@ router.post('/upload', checkScanLimit, (req, res, next) => {
       }
       userId = newUser.id;
     } else {
-      userId = existingUser.id;
+      userId = existingUserResult.data.id;
     }
 
-    // Check for existing resume with same hash for this user
-    const { data: existingResume, error: resumeError } = await supabase
+    // Check for existing resume with same hash for this user (cache hit = instant return)
+    const { data: existingResume } = await supabase
       .from('resumes')
       .select('*, analyses(*)')
       .eq('userId', userId)
       .eq('textHash', textHash)
       .order('createdAt', { foreignTable: 'analyses', ascending: false });
-      // Removed .limit(1, { foreignTable: 'Analysis' }).single() to be safer
 
     if (existingResume && existingResume.length > 0) {
       const resumeDoc = existingResume[0];
@@ -149,12 +161,10 @@ router.post('/upload', checkScanLimit, (req, res, next) => {
         console.log(`[ANALYZER] Duplicate resume detected for user ${userId}. Returning existing report.`);
         return res.json({
           success: true,
-          data: {
-            isDuplicate: true,
-            resumeId: resumeDoc.id,
-            report: resumeDoc.analyses[0],
-            rawText: resumeDoc.text,
-          }
+          isDuplicate: true,
+          resumeId: resumeDoc.id,
+          report: resumeDoc.analyses[0],
+          rawText: resumeDoc.text,
         });
       }
     }
@@ -176,16 +186,15 @@ router.post('/upload', checkScanLimit, (req, res, next) => {
 
     res.json({
       success: true,
-      data: {
-        resumeId: resume.id,
-        rawText: text,
-        isDuplicate: false
-      }
+      resumeId: resume.id,
+      rawText: text,
+      isDuplicate: false
     });
 
   } catch (error) {
     const errorMsg = error instanceof Error ? error.stack : String(error);
     console.error('RESUME UPLOAD ERROR:', errorMsg);
+    asyncLog('ERROR', `RESUME UPLOAD ERROR: ${errorMsg}`);
     res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown upload error' });
   }
 });
@@ -209,7 +218,6 @@ router.post('/process', async (req, res): Promise<any> => {
       return res.status(404).json({ error: 'Resume not found' });
     }
 
-    // Issue B fix: guard against empty/corrupt resume text reaching the AI
     if (!resume.text || resume.text.trim().length < 20) {
       console.warn(`[ANALYZER] Resume ${resumeId} has no extractable text — aborting AI call`);
       return res.status(400).json({
@@ -218,23 +226,32 @@ router.post('/process', async (req, res): Promise<any> => {
       });
     }
 
-    const prompt = `Act as a senior recruiter and ATS scanner. Analyze this resume text and return a JSON object.
+    const prompt = `Act as a senior recruiter and ATS system for top tech companies.
+Analyze the resume and return:
+1. ATS Score (0-100) based on Keyword match (30%), Skills relevance (25%), Experience quality (20%), Formatting & readability (15%), Action verbs & impact (10%)
+2. Summary (2-3 lines, professional tone)
+3. Strengths (bullet points)
+4. Weaknesses (bullet points)
+5. Missing Keywords (important)
+6. Improvement Suggestions (clear, actionable)
+7. Formatting Issues (if any)
+
+Make the response professional, concise, realistic, not generic, and with no fluff language.
 
 Resume Text:
-${resume.text.substring(0, 4000)}
+${resume.text.substring(0, 10000)}
 
-Return EXCLUSIVELY a JSON object (no markdown, no other text):
+Return the response EXCLUSIVELY as a JSON object with this exact structure (no markdown, no extra text):
 {
   "score": number,
-  "summary": "2-3 sentence summary",
-  "strengths": ["strength 1", "strength 2"],
-  "weaknesses": ["weakness 1", "weakness 2"],
-  "missingKeywords": ["keyword 1", "keyword 2"],
-  "suggestions": ["suggestion 1", "suggestion 2"],
-  "formattingIssues": ["issue 1", "issue 2"]
+  "summary": "string",
+  "strengths": ["string", "string"],
+  "weaknesses": ["string", "string"],
+  "missingKeywords": ["string", "string"],
+  "suggestions": ["string", "string"],
+  "formattingIssues": ["string", "string"]
 }`;
 
-    // Call Gemini with timeout protection
     console.log(`[ANALYZER] Calling Gemini API for resume ${resumeId}...`);
     let parsedResult;
     try {
@@ -303,37 +320,32 @@ Return EXCLUSIVELY a JSON object (no markdown, no other text):
 
     if (createReportError) throw createReportError;
 
-    // ── Fire-and-forget tracking ──────────────────────────────────────────────
-    // Both Supabase calls are intentionally non-blocking. If they fail, the user
-    // already received a 200 — we log the error but never re-throw it.
+    // Fire-and-forget tracking — non-blocking
     void (async () => {
       try {
-        // 1. Atomically increment scan_count by 1 using a raw Postgres expression
         await supabase.rpc('increment_user_scan_count', { target_user_id: resume.userId });
-
-        // 2. Insert a row into scan_history
         await supabase
           .from('scan_history')
           .insert([{
             user_id:        resume.userId,
             ats_score:      parsedResult.score ?? 0,
-            job_title:      null,                                       // no job title at analysis time — can be set during job-match
-            skills_matched: JSON.stringify(parsedResult.strengths ?? []), // closest proxy available at this stage
+            job_title:      null,
+            skills_matched: JSON.stringify(parsedResult.strengths ?? []),
           }]);
       } catch (trackingErr) {
         console.error('[ANALYZER] Non-critical tracking error (scan_count / scan_history):', trackingErr);
       }
     })();
-    // ── End tracking ──────────────────────────────────────────────────────────
 
     res.json({
       success: true,
-      data: report
+      report
     });
 
   } catch (error) {
     const errorMsg = error instanceof Error ? error.stack : String(error);
     console.error('RESUME ANALYSIS ERROR:', errorMsg);
+    asyncLog('ERROR', `RESUME ANALYSIS ERROR: ${errorMsg}`);
     res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown analysis error' });
   }
 });
