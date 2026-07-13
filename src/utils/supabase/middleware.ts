@@ -1,6 +1,9 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+// Lightweight in-memory cache for validated sessions/JWTs to speed up route checks
+const tokenCache = new Map<string, { user: any; expiresAt: number }>();
+
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
     request: {
@@ -17,14 +20,28 @@ export async function updateSession(request: NextRequest) {
       const tokenData = JSON.parse(decodeURIComponent(authCookie));
       const accessToken = Array.isArray(tokenData) ? tokenData[0] : (tokenData.access_token || tokenData);
       if (accessToken) {
-        const payloadPart = accessToken.split('.')[1];
-        if (payloadPart) {
-          const payload = JSON.parse(Buffer.from(payloadPart, 'base64').toString('utf-8'));
-          user = {
-            id: payload.sub,
-            email: payload.email,
-            user_metadata: payload.user_metadata || {},
-          };
+        const cached = tokenCache.get(accessToken);
+        if (cached && cached.expiresAt > Date.now()) {
+          user = cached.user;
+        } else {
+          const payloadPart = accessToken.split('.')[1];
+          if (payloadPart) {
+            const payload = JSON.parse(Buffer.from(payloadPart, 'base64').toString('utf-8'));
+            const exp = payload.exp ? payload.exp * 1000 : Date.now() + 60 * 60 * 1000;
+            if (exp > Date.now()) {
+              user = {
+                id: payload.sub,
+                email: payload.email,
+                user_metadata: payload.user_metadata || {},
+              };
+              // Cache for 5 mins or until token expires
+              const cacheDuration = Math.min(5 * 60 * 1000, exp - Date.now());
+              tokenCache.set(accessToken, {
+                user,
+                expiresAt: Date.now() + cacheDuration,
+              });
+            }
+          }
         }
       }
     }
@@ -81,6 +98,21 @@ export async function updateSession(request: NextRequest) {
       );
       const { data } = await supabase.auth.getUser();
       user = data?.user;
+      
+      // Cache the newly fetched user if available
+      if (user) {
+        const authCookie = request.cookies.get(cookieName)?.value;
+        if (authCookie) {
+          const tokenData = JSON.parse(decodeURIComponent(authCookie));
+          const accessToken = Array.isArray(tokenData) ? tokenData[0] : (tokenData.access_token || tokenData);
+          if (accessToken) {
+            tokenCache.set(accessToken, {
+              user,
+              expiresAt: Date.now() + 5 * 60 * 1000,
+            });
+          }
+        }
+      }
     } catch (err) {
       console.warn("getUser failed (possibly offline):", err);
     }

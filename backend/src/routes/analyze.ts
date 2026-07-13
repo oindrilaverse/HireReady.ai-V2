@@ -3,11 +3,12 @@ import multer from 'multer';
 import crypto from 'crypto';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { supabase } from '../lib/supabase.js';
-import { checkScanLimit } from '../middleware/checkScanLimit.js';
+import { checkScanLimit, scanCache } from '../middleware/checkScanLimit.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
+import { Worker } from 'worker_threads';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,22 +23,67 @@ function asyncLog(level: 'INFO' | 'WARN' | 'ERROR', msg: string) {
   });
 }
 
+/**
+ * Parses a PDF buffer in a separate Node.js worker thread
+ * to avoid blocking the main event loop.
+ */
+function parsePdfInWorker(buffer: Buffer): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const workerCode = `
+      const { parentPort, workerData } = require('worker_threads');
+      const pdfParse = require('pdf-parse');
+      
+      pdfParse(Buffer.from(workerData))
+        .then(result => {
+          parentPort.postMessage({ success: true, text: result.text || '' });
+        })
+        .catch(err => {
+          parentPort.postMessage({ success: false, error: err.message || String(err) });
+        });
+    `;
+    const worker = new Worker(workerCode, {
+      eval: true,
+      workerData: buffer,
+    });
+
+    worker.on('message', (msg) => {
+      if (msg.success) {
+        resolve(msg.text);
+      } else {
+        reject(new Error(msg.error));
+      }
+    });
+
+    worker.on('error', (err) => {
+      reject(err);
+    });
+
+    worker.on('exit', (code) => {
+      if (code !== 0) {
+        reject(new Error(`Worker stopped with exit code ${code}`));
+      }
+    });
+  });
+}
+
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-router.post('/upload', checkScanLimit, (req, res, next) => {
-  const msg = `[ANALYZER] Incoming POST to /api/analyze/upload | Content-Type: ${req.headers['content-type']}`;
-  console.log(msg);
-  asyncLog('INFO', msg);
-  next();
-}, upload.single('file'), async (req, res): Promise<any> => {
+// Run Multer FIRST so body fields (authId) are parsed, then run checkScanLimit
+router.post('/upload', upload.single('file'), checkScanLimit, async (req, res): Promise<any> => {
   try {
     const file = req.file;
     const { authId, userEmail, userName } = req.body;
 
+    const msg = `[ANALYZER] Incoming POST to /api/analyze/upload | Content-Type: ${req.headers['content-type']}`;
+    console.log(msg);
+    asyncLog('INFO', msg);
     console.log(`[ANALYZER] Received request for authId: ${authId}, filename: ${file?.originalname}`);
 
     if (!file) {
@@ -60,31 +106,36 @@ router.post('/upload', checkScanLimit, (req, res, next) => {
       return res.status(400).json({ error: 'Unsupported file type. Please upload a PDF, DOCX, or TXT file.' });
     }
 
-    // FIX 5: Start user lookup in parallel with PDF parsing.
-    // Previously: parse PDF first (sequential), then look up user, then check for duplicate resume.
-    // Now: PDF parsing and user lookup fire simultaneously via Promise.all — saves one full round trip wait.
     console.log(`[ANALYZER] Parsing file & fetching user in parallel: ${file.originalname}`);
 
     const parsePromise: Promise<string> = (async () => {
       if (isText) {
-        return file.buffer.toString('utf-8');
+        const textVal = file.buffer.toString('utf-8');
+        // Clear file buffer immediately
+        (file as any).buffer = Buffer.alloc(0);
+        return textVal;
       } else if (isPdf) {
         try {
-          const parseResult = await pdfParseModule(file.buffer);
-          const text = parseResult.text || '';
-          console.log(`[ANALYZER] PDF parsed successfully. Length: ${text.length}`);
+          // Copy buffer to pass to worker safely
+          const bufCopy = Buffer.from(file.buffer);
+          const text = await parsePdfInWorker(bufCopy);
+          // Clear file buffer immediately
+          (file as any).buffer = Buffer.alloc(0);
+          console.log(`[ANALYZER] PDF parsed successfully via worker thread. Length: ${text.length}`);
           return text;
         } catch (pdfError) {
-          asyncLog('WARN', `[ANALYZER] PDF Parse Error: ${pdfError instanceof Error ? pdfError.message : String(pdfError)}. Attempting AI fallback.`);
+          asyncLog('WARN', `[ANALYZER] PDF Parse via worker Error: ${pdfError instanceof Error ? pdfError.message : String(pdfError)}. Attempting AI fallback.`);
           try {
             const fallbackResult = await model.generateContent([
               { inlineData: { data: file.buffer.toString('base64'), mimeType: 'application/pdf' } },
               { text: 'Extract and return ALL text from this resume document exactly as it appears. No formatting, no commentary. Just the raw text.' }
             ]);
+            (file as any).buffer = Buffer.alloc(0);
             const text = fallbackResult.response.text();
             console.log(`[ANALYZER] Gemini PDF fallback successful. Length: ${text.length}`);
             return text;
           } catch (geminiError) {
+            (file as any).buffer = Buffer.alloc(0);
             console.error('[ANALYZER] Gemini PDF fallback failed:', geminiError);
             return 'Unable to extract readable text from this PDF. Please try uploading a plain text (.txt) version.';
           }
@@ -96,22 +147,27 @@ router.post('/upload', checkScanLimit, (req, res, next) => {
             { inlineData: { data: file.buffer.toString('base64'), mimeType: file.mimetype } },
             { text: 'Extract and return ALL text from this resume document exactly as it appears. No formatting, no commentary. Just the raw text.' }
           ]);
+          (file as any).buffer = Buffer.alloc(0);
           const text = fallbackResult.response.text();
           console.log(`[ANALYZER] Gemini document extraction successful. Length: ${text.length}`);
           return text;
         } catch (geminiError) {
+          (file as any).buffer = Buffer.alloc(0);
           console.error('[ANALYZER] Gemini document extraction failed:', geminiError);
           return 'Unable to extract text from this document. Please upload a PDF or TXT version of your resume.';
         }
       }
     })();
 
-    // FIX 5: User lookup runs in parallel with PDF parsing
-    const userLookupPromise = supabase
-      .from('users')
-      .select('id')
-      .eq('auth_id', authId)
-      .maybeSingle();
+    // Check if we already looked up the user in checkScanLimit
+    const dbUser = (req as any).dbUser;
+    const userLookupPromise = dbUser 
+      ? Promise.resolve({ data: dbUser })
+      : supabase
+          .from('users')
+          .select('id')
+          .eq('auth_id', authId)
+          .maybeSingle();
 
     // Wait for both to complete simultaneously
     const [text, existingUserResult] = await Promise.all([parsePromise, userLookupPromise]);
@@ -126,7 +182,7 @@ router.post('/upload', checkScanLimit, (req, res, next) => {
 
     const textHash = crypto.createHash('sha256').update(text.trim()).digest('hex');
 
-    // FIX 6: Use upsert for user creation instead of select-then-insert
+    // Use upsert for user creation instead of select-then-insert
     let userId: string;
     if (!existingUserResult.data) {
       console.log(`[ANALYZER] User not found, auto-creating for authId: ${authId}`);
@@ -324,6 +380,15 @@ Return the response EXCLUSIVELY as a JSON object with this exact structure (no m
     void (async () => {
       try {
         await supabase.rpc('increment_user_scan_count', { target_user_id: resume.userId });
+        
+        // Update local cache count if present
+        for (const [key, val] of scanCache.entries()) {
+          if (val.id === resume.userId) {
+            val.scan_count += 1;
+            break;
+          }
+        }
+
         await supabase
           .from('scan_history')
           .insert([{

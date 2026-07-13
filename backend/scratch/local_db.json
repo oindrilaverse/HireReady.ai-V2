@@ -40,6 +40,14 @@
       "text": "Unable to extract readable text from this PDF. Please try uploading a plain text (.txt) version.",
       "textHash": "d749a3d9e24355e5fc34e836ad508326d50af760bfaf1c7237cd81fda2bf0cc0",
       "originalName": "OINDRILA_CHATTERJEE_RESUME (24).pdf"
+    },
+    {
+      "id": "fa52198d-6089-4139-a3c2-6b7b42ab4d87",
+      "createdAt": "2026-06-08T20:28:18.035Z",
+      "userId": "bde52bb3-d1c8-47f0-9254-08908f2f4255",
+      "text": "\nJane Doe - Software Engineer\njane.doe@example.com | Seattle, WA\n\nPROFESSIONAL SUMMARY:\nExperienced Software Engineer with 4 years of experience building scalable web applications. Proficient in React, Next.js, TypeScript, and Node.js.\n\nSKILLS:\nReact, Next.js, TypeScript, Node.js, PostgreSQL, Docker, Git.\n",
+      "textHash": "c2d935b8894ea94c9bc62aaca42c19bcc1e75a8c4b4e35fab4db771843dbfd9e",
+      "originalName": "resume_match_test.txt"
     }
   ],
   "analyses": [
@@ -66,8 +74,29 @@
       "missingKeywords": "[\"CI/CD pipelines\",\"Docker\",\"Unit testing (Jest/Mocha)\",\"Agile methodologies\"]",
       "suggestions": "[\"Quantify achievements under each job description with key metrics.\",\"Add specific cloud technologies and deployment frameworks used.\",\"Improve readability by utilizing clean formatting and bullet points.\"]",
       "formattingIssues": "[\"Ensure consistent spacing and date formats throughout the document.\"]"
+    },
+    {
+      "id": "5c90e0bd-4804-42b9-a448-3f7f21f2cb43",
+      "createdAt": "2026-06-08T20:28:18.959Z",
+      "resumeId": "fa52198d-6089-4139-a3c2-6b7b42ab4d87",
+      "score": 82,
+      "summary": "Software professional showing background in technical skills. Analysis highlights strong alignment with core development standards but shows opportunities for additional structural refinements.",
+      "strengths": "[\"Good representation of core technical stack and programming languages.\",\"Clear employment history showing roles and responsibilities.\",\"Good educational qualifications listed.\"]",
+      "weaknesses": "[\"Could benefit from more quantified metrics to show business impact.\",\"Action verbs could be enhanced to show stronger leadership and ownership.\",\"Lack of explicit detail regarding deployment pipelines and system scalability.\"]",
+      "missingKeywords": "[\"CI/CD pipelines\",\"Docker\",\"Unit testing (Jest/Mocha)\",\"Agile methodologies\"]",
+      "suggestions": "[\"Quantify achievements under each job description with key metrics.\",\"Add specific cloud technologies and deployment frameworks used.\",\"Improve readability by utilizing clean formatting and bullet points.\"]",
+      "formattingIssues": "[\"Ensure consistent spacing and date formats throughout the document.\"]"
     }
   ],
-  "job_matches": [],
+  "job_matches": [
+    {
+      "id": "9dacd770-06b6-474d-bf4a-81caf257fb3e",
+      "createdAt": "2026-06-08T20:28:20.008Z",
+      "resumeId": "fa52198d-6089-4139-a3c2-6b7b42ab4d87",
+      "jobDescription": "We are looking for a Senior React/Next.js Developer.\nRequirements:\n- React\n- Next.js\n- TypeScript\n- Node.js\n- PostgreSQL\n- Docker",
+      "matchScore": 95,
+      "feedback": "{\"summary\":\"Calculated compatibility based on key skill intersection. The candidate's background shows a 95% match with the role's primary stack, sharing skills like: react, next.js, typescript.\",\"matchingSkills\":[\"REACT\",\"NEXT.JS\",\"TYPESCRIPT\",\"NODE.JS\",\"POSTGRESQL\",\"POSTGRES\",\"DOCKER\"],\"missingSkills\":[],\"strengthsForRole\":[\"Strong alignment in core stack: react, next.js, typescript, node.js.\",\"Direct experience matches key requirements in the job description.\"],\"weaknessesForRole\":[\"No significant gaps found in the core technical requirements.\"],\"improvementSuggestions\":[\"Tailor your project descriptions to highlight your direct work with production deployments.\",\"Add quantified business metrics showing the impact of your contributions.\"]}"
+    }
+  ],
   "ai_chats": []
 }

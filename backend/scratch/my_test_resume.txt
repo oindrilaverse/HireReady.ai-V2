@@ -1,0 +1,23 @@
+John Doe
+john.doe@example.com | (123) 456-7890 | San Francisco, CA | github.com/johndoe
+
+SUMMARY:
+Senior Full Stack Engineer with 6+ years of experience specializing in React, Next.js, Node.js, and PostgreSQL. Focused on web application performance optimization, state management, and cloud architecture.
+
+SKILLS:
+- Frontend: JavaScript (ES6+), TypeScript, React, Next.js, HTML5, CSS3, Tailwind CSS, Redux, Zustand
+- Backend: Node.js, Express, PostgreSQL, MongoDB, GraphQL, REST APIs, Prisma, Supabase
+- Devops: Docker, AWS (S3, EC2), CI/CD (GitHub Actions), Git
+
+EXPERIENCE:
+Lead Software Engineer | TechCorp | 2022 - Present
+- Architected and built a SaaS application with Next.js, React, and Node.js, scaling to 100,000+ daily active users.
+- Optimized frontend asset bundles and database queries, resulting in a 40% reduction in page load latency.
+- Mentored junior engineers and led code reviews to maintain high quality standards.
+
+Software Engineer | DevShop | 2020 - 2022
+- Developed customer-facing dashboards using React, TypeScript, and Tailwind CSS.
+- Designed and maintained REST APIs using Node.js/Express, integrating Stripe for billing.
+
+EDUCATION:
+BS in Computer Science | California State University | 2016 - 2020
