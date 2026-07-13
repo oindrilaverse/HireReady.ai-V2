@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { supabase } from './lib/supabase.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -71,11 +72,27 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  const mem = process.memoryUsage();
+  const dbStatus = await supabase.checkConnection();
+  const status = dbStatus.online ? 'ok' : 'degraded';
+
   res.json({ 
-    status: 'ok', 
+    status, 
     timestamp: new Date().toISOString(),
-    env: process.env.NODE_ENV || 'development'
+    uptime: Math.round(process.uptime()),
+    env: process.env.NODE_ENV || 'development',
+    memory: {
+      rss: `${(mem.rss / 1024 / 1024).toFixed(2)} MB`,
+      heapTotal: `${(mem.heapTotal / 1024 / 1024).toFixed(2)} MB`,
+      heapUsed: `${(mem.heapUsed / 1024 / 1024).toFixed(2)} MB`,
+      external: `${(mem.external / 1024 / 1024).toFixed(2)} MB`,
+    },
+    database: {
+      status: dbStatus.online ? 'connected' : 'disconnected',
+      duration: `${dbStatus.durationMs} ms`,
+      error: dbStatus.error || null,
+    }
   });
 });
 

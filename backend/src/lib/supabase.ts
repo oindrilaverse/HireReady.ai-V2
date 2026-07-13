@@ -377,5 +377,18 @@ export const supabase = {
   ...originalSupabase,
   from(table: string) {
     return new QueryBuilderWrapper(table);
+  },
+  async checkConnection() {
+    try {
+      const start = Date.now();
+      const { error } = await originalSupabase.from('users').select('id').limit(1);
+      const duration = Date.now() - start;
+      if (error && error.code !== 'PGRST116') {
+        return { online: false, error: error.message, durationMs: duration };
+      }
+      return { online: true, durationMs: duration };
+    } catch (err: any) {
+      return { online: false, error: err.message || String(err), durationMs: 0 };
+    }
   }
 } as any;

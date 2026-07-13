@@ -66,6 +66,60 @@ function parsePdfInWorker(buffer: Buffer): Promise<string> {
   });
 }
 
+class ConcurrencyLimiter {
+  private activeCount = 0;
+  private maxConcurrent: number;
+  private maxQueueLength: number;
+  private queue: (() => void)[] = [];
+
+  constructor(maxConcurrent: number, maxQueueLength: number) {
+    this.maxConcurrent = maxConcurrent;
+    this.maxQueueLength = maxQueueLength;
+  }
+
+  async run<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.activeCount < this.maxConcurrent) {
+      this.activeCount++;
+      try {
+        return await fn();
+      } finally {
+        this.activeCount--;
+        this.next();
+      }
+    }
+
+    if (this.queue.length >= this.maxQueueLength) {
+      throw new Error('QUEUE_LIMIT_EXCEEDED');
+    }
+
+    return new Promise<T>((resolve, reject) => {
+      this.queue.push(async () => {
+        try {
+          const res = await fn();
+          resolve(res);
+        } catch (err) {
+          reject(err);
+        } finally {
+          this.activeCount--;
+          this.next();
+        }
+      });
+    });
+  }
+
+  private next() {
+    if (this.activeCount < this.maxConcurrent && this.queue.length > 0) {
+      const nextFn = this.queue.shift();
+      if (nextFn) {
+        this.activeCount++;
+        nextFn();
+      }
+    }
+  }
+}
+
+const pdfLimiter = new ConcurrencyLimiter(2, 5);
+
 const router = Router();
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -115,15 +169,31 @@ router.post('/upload', upload.single('file'), checkScanLimit, async (req, res): 
         (file as any).buffer = Buffer.alloc(0);
         return textVal;
       } else if (isPdf) {
+        const memBefore = process.memoryUsage();
+        const start = Date.now();
+        console.log(`[PDF Parser] Memory before parse: RSS=${(memBefore.rss/1024/1024).toFixed(2)}MB, HeapUsed=${(memBefore.heapUsed/1024/1024).toFixed(2)}MB`);
+        
         try {
           // Copy buffer to pass to worker safely
           const bufCopy = Buffer.from(file.buffer);
-          const text = await parsePdfInWorker(bufCopy);
+          const text = await pdfLimiter.run(() => parsePdfInWorker(bufCopy));
+          
+          const memAfter = process.memoryUsage();
+          const duration = Date.now() - start;
+          const rssDiff = (memAfter.rss - memBefore.rss)/1024/1024;
+          const heapDiff = (memAfter.heapUsed - memBefore.heapUsed)/1024/1024;
+          console.log(`[PDF Parser] Parse finished in ${duration}ms. Memory change: RSS=${rssDiff.toFixed(2)}MB, HeapUsed=${heapDiff.toFixed(2)}MB. Total RSS: ${(memAfter.rss/1024/1024).toFixed(2)}MB`);
+          asyncLog('INFO', `[PDF Parser] Parse finished. RSS change: ${rssDiff.toFixed(2)}MB. Total RSS: ${(memAfter.rss/1024/1024).toFixed(2)}MB`);
+
           // Clear file buffer immediately
           (file as any).buffer = Buffer.alloc(0);
           console.log(`[ANALYZER] PDF parsed successfully via worker thread. Length: ${text.length}`);
           return text;
-        } catch (pdfError) {
+        } catch (pdfError: any) {
+          if (pdfError.message === 'QUEUE_LIMIT_EXCEEDED') {
+            throw pdfError; // propagate up directly to skip fallback
+          }
+
           asyncLog('WARN', `[ANALYZER] PDF Parse via worker Error: ${pdfError instanceof Error ? pdfError.message : String(pdfError)}. Attempting AI fallback.`);
           try {
             const fallbackResult = await model.generateContent([
@@ -247,7 +317,14 @@ router.post('/upload', upload.single('file'), checkScanLimit, async (req, res): 
       isDuplicate: false
     });
 
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message === 'QUEUE_LIMIT_EXCEEDED') {
+      console.warn('[ANALYZER] Queue limit exceeded for PDF parser');
+      return res.status(429).json({
+        success: false,
+        error: 'Server is currently processing too many PDF documents. Please try again in a few seconds.'
+      });
+    }
     const errorMsg = error instanceof Error ? error.stack : String(error);
     console.error('RESUME UPLOAD ERROR:', errorMsg);
     asyncLog('ERROR', `RESUME UPLOAD ERROR: ${errorMsg}`);
